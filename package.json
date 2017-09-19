@@ -4,10 +4,11 @@
   "description": "This is my first Atomist automation node",
   "dependencies": {
     "@atomist/automation-client": "^0.1.3",
-    "@atomist/microgrammar": "^0.6.0",
     "@atomist/slack-messages": "^0.11.0",
     "@types/winston": "^2.3.5",
-    "cfenv": "^1.0.4"
+    "cfenv": "^1.0.4",
+    "child-process": "^1.0.2",
+    "fs": "0.0.1-security"
   },
   "devDependencies": {
     "@types/node": "^8.0.26",
@@ -36,7 +37,7 @@
     "testone": "mocha --compilers ts:espower-typescript/guess \"test/**/${TEST:-*.ts}\"",
     "test": "mocha --compilers ts:espower-typescript/guess \"test/**/*.ts\"",
     "benchmark": "mocha --prof --compilers ts:espower-typescript/guess \"test/**/*Benchmark.ts\"; node --prof-process isolate-* > profile.txt",
-    "start": "npm run compile && $(npm bin)/atomist-client --open=true",
+    "start": "npm run compile && $(npm bin)/atomist-client ",
     "autostart": "npm-run-all --parallel watch:build watch:server --print-label",
     "watch:build": "tsc --watch",
     "watch:server": "nodemon node_modules/@atomist/automation-client/start.client.js --watch './build'"
