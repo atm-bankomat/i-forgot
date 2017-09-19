@@ -31,8 +31,8 @@
     "watch:build": "tsc --watch",
     "watch:server": "nodemon node_modules/@atomist/automation-client/start.client.js --watch './build'"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Atomist, Inc.",
+  "license": "GPL-3.0",
   "engines": {
     "node": "8.2.x",
     "npm": "5.3.x"
