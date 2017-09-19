@@ -1,6 +1,6 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 
-import { HelloWorld } from "./commands/HelloWorld";
+import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
 import { NotifyOnPush } from "./events/NotifyOnPush";
 
