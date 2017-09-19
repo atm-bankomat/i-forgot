@@ -1,0 +1,7 @@
+applications:
+- name: development-automation-node
+  command: $(npm bin)/atomist-node
+  memory: 512M
+  buildpack: https://github.com/cloudfoundry/nodejs-buildpack
+  env:
+    SUPPRESS_NO_CONFIG_WARNING: true
