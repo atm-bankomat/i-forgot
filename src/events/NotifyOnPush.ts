@@ -7,7 +7,7 @@ import {
     HandlerResult,
     Tags,
 } from "@atomist/automation-client/Handlers";
-import { logger } from "@atomist/automation-client/internal/util/Logger";
+import { logger } from "@atomist/automation-client/internal/util/logger";
 import { PushWithRepoSubscription } from "../schema";
 
 @EventHandler("Notify channel on push", GraphQL.subscriptionFromFile("graphql/push"))

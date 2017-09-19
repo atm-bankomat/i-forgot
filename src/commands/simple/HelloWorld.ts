@@ -7,7 +7,7 @@ import {
     Parameter,
     Tags,
 } from "@atomist/automation-client/Handlers";
-import { logger } from "@atomist/automation-client/internal/util/Logger";
+import { logger } from "@atomist/automation-client/internal/util/logger";
 import { PersonQuery, PersonQueryVariables } from "../../schema";
 
 @CommandHandler("Sends a hello back to the invoking user/channel", "hello world")
