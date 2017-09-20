@@ -65,7 +65,20 @@ To start the client, run the following command:
 $ cd automation-client-samples-ts
 $ npm run start
 ```
-## Access to the Dashboard and GraphQL data explorer
+
+## Invoking a command handler from Slack
+
+This samples project contains a simple [`HelloWorld`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/commands/simple/HelloWorld.ts) command handler that can be invoked with `@atomist hello world` in the testing Slack team. Once you've submitted the command in Slack, you'll incoming and outgoing messages show up on your local automation-client.
+
+Finally you should see a response form the bot in Slack.
+
+## Triggering an event handler
+
+You can trigger the [`CommentOnIssue`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/events/CommentOnIssue.ts) event handler by simply creating a new issue in https://github.com/atomist-rugs/cd-test-01 and watching your terminal window.
+
+The issue event will come and you'll an outgoing message to Slack. This message is being sent to the `cd-test-01` channel in the testing Slack team.
+
+## Dashboard and GraphQL data explorer
 
 When the automation client has successfully established a connection to the
 Atomist API server the Dashboard (work-in-progress) and GraphQL data explorer
