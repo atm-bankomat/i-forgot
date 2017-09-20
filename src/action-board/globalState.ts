@@ -21,22 +21,16 @@ class ActionBoardTracker implements TrackActionBoards {
 
     private CacheFile = "actionBoardsCache.json"
     private writePromise = Promise.resolve(null);
-    private cache: {} = {};
+    private cache: {} = {}; // channelName -> ActionBoardSpecifier
 
     constructor() {
         try {
-            console.log(`****_________TRON: reading in the cache`);
-
             const content = fs.readFileSync(this.CacheFile);
-            console.log(`****_________TRON: did the cache read`)
             this.cache = JSON.parse(content) || {};
-
             logger.info("Read from action board cache: " + JSON.stringify(this.cache));
         } catch {
             (e) => {
                 this.cache = {};
-                console.log(`****_________TRON:did not read the cache`)
-
                 logger.error(`FYI, unable to read ${this.CacheFile}: ` + JSON.stringify(e));
             }
         };
@@ -51,12 +45,16 @@ class ActionBoardTracker implements TrackActionBoards {
     }
 
     add(one: ActionBoardSpecifier): void {
-        this.cache[one.wazzupMessageId] = one;
+        this.cache[one.channelName] = one;
         this.writeCache(this.cache);
     }
     update(one: ActionBoardSpecifier): void {
-        this.cache[one.wazzupMessageId] = one;
-        this.writeCache(this.cache);
+        if (this.cache[one.channelName].wazzupMessageId === one.wazzupMessageId) {
+            this.cache[one.channelName] = one;
+            this.writeCache(this.cache);
+        } else {
+            logger.info(`Not storing ${one.wazzupMessageId} because it is not current for the channel`)
+        }
     }
     fetchAll(): ActionBoardSpecifier[] {
         return Object.values(this.cache) as ActionBoardSpecifier[];
