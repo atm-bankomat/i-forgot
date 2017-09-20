@@ -24,4 +24,15 @@ export const configuration: Configuration = {
         () => new NotifyOnPush(),
     ],
     token,
+    http: {
+        enabled: true,
+        auth: {
+            basic: {
+                enabled: false,
+            },
+            bearer: {
+                enabled: false,
+            },
+        },
+    },
 };
