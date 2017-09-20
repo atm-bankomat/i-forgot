@@ -76,7 +76,7 @@ Finally you should see a response form the bot in Slack.
 
 You can trigger the [`CommentOnIssue`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/events/CommentOnIssue.ts) event handler by simply creating a new issue in https://github.com/atomist-rugs/cd-test-01 and watching your terminal window.
 
-The issue event will come and you'll an outgoing message to Slack. This message is being sent to the `cd-test-01` channel in the testing Slack team.
+The issue event will comein  and you'll see an outgoing message to Slack. This message is being sent to the `cd-test-01` channel in the testing Slack team.
 
 ## Dashboard and GraphQL data explorer
 
