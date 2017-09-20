@@ -15,7 +15,7 @@ const token = credService ? credService.token : process.env.GITHUB_TOKEN;
 export const configuration: Configuration = {
     name: pj.name,
     version: pj.version,
-    teamId: "T1L0VDKJP",
+    teamId: "T74GV0HDK",
     commands: [
         () => new HelloWorld(),
     ],
