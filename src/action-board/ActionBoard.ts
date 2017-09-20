@@ -17,7 +17,7 @@ import { findLinkedRepositories, isWorkday, repositoryFromIssue, Repository, toE
 import { whereAmIRunning } from './Provenance';
 import { GitHubIssueResult, hasLabel, GitHubIssueSearchResult } from './GitHubApiTypes';
 import { MessageOptions, buttonForCommand, MessageClient } from '@atomist/automation-client/spi/message/MessageClient';
-import { globalActionBoardTracker, ActionBoardSpecifier } from './globalState';
+import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
 
 
 const teamStream = "#team-stream";
@@ -67,11 +67,13 @@ export class ActionBoard implements HandleCommand {
         return doWazzup(ctx,
             actionBoard,
             githubToken, triggeredByUser
-        ).then(() => {
-            globalActionBoardTracker.add(actionBoard);
-            return Promise.resolve({ code: 0 });
-        });
-    }
+        ).then(
+            activities => {
+                logger.info(`recording action board ${actionBoard.wazzupMessageId} with ${activities.length} activities)`);
+                globalActionBoardTracker.add({ ...actionBoard, activities });
+                return Promise.resolve({ code: 0 });
+            });
+    };
 }
 
 @CommandHandler("Updates a list of things to work on", "update the wazzup message")
@@ -91,9 +93,6 @@ export class ActionBoardUpdate implements HandleCommand {
     @MappedParameter(MappedParameters.SLACK_USER_NAME)
     public slackName: string;
 
-    // @MappedParameter(MappedParameters.SLACK_USER)
-    // public slackUser: string;
-
     @Parameter({ pattern: /^.*$/, required: true })
     public wazzupMessageId: string;
 
@@ -108,18 +107,21 @@ export class ActionBoardUpdate implements HandleCommand {
         const triggeredByUser: boolean = true;
         const collapse: boolean = this.collapse !== "false";
         const ts = new Date().getTime();
+        const actionBoard = {
+            wazzupMessageId: this.wazzupMessageId,
+            channelId: this.channelId,
+            channelName: this.channelName,
+            githubName: this.githubName,
+            collapse,
+            ts
+        };
 
         return doWazzup(ctx,
-            {
-                wazzupMessageId: this.wazzupMessageId,
-                channelId: this.channelId,
-                channelName: this.channelName,
-                githubName: this.githubName,
-                collapse,
-                ts
-            },
+            actionBoard,
             this.githubToken, triggeredByUser,
-            `Refresh requested by someone`).then(() => {
+            `Refresh requested by ${do_not_ping(this.slackName)}`).then(activities => {
+                logger.info(`updating action board ${actionBoard.wazzupMessageId} with ${activities.length} activities)`);
+                globalActionBoardTracker.add({ ...actionBoard, activities });
                 return Promise.resolve({ code: 0 });
             });
 
@@ -166,7 +168,7 @@ export function doWazzup(ctx: HandlerContext,
     githubToken: string,
     triggeredByUser: boolean,
     provenanceMessage?: string,
-): Promise<any> {
+): Promise<ActionBoardActivity[]> {
 
     function issues(): Promise<Activities> {
         const query = `assignee:${actionBoard.githubName}+state:open`;
@@ -207,6 +209,7 @@ export function doWazzup(ctx: HandlerContext,
                 console.log("did find the linked repos");
                 const activities: Activity[] = result.items.map(i => {
                     return {
+                        identifier: i.url,
                         priority: priority(linkedRepositories, i),
                         recency: normalizeTimestamp(i.updated_at),
                         current: hasLabel(i, inProgressLabelName),
@@ -239,14 +242,17 @@ export function doWazzup(ctx: HandlerContext,
         console.log("ISSUE activites: " + JSON.stringify(issues.activities.length))
         const summaryAttachments = [issues.summary.appearance];
         const currentActivities = issues.activities.filter(a => a.current);
-        const futureActivities = issues.activities.filter(a => !a.current);
+        const futureActivities = issues.activities.filter(a => !a.current).sort(priorityThenRecency).slice(0, 5);
 
         const currentAttachments = currentActivities.map(a => a.appearance);
-        const futureAttachments = actionBoard.collapse ? [] : futureActivities.sort(priorityThenRecency).slice(0, 5).map(a => a.appearance);
-
         const text = currentActivities.length > 0 ? `You are currently working on ${
             currentActivities.length === 1 ? "one thing:" : currentActivities.length + " things"}`
             : 'Here are some things you could do.';
+
+
+        const futureAttachments = actionBoard.collapse ? [] : futureActivities.map(a => a.appearance);
+        const includedActivities = actionBoard.collapse ? currentActivities : currentActivities.concat(futureActivities);
+
 
         const collapseButton = actionBoard.collapse ?
             buttonForCommand({ text: "Expand" },
@@ -291,8 +297,13 @@ export function doWazzup(ctx: HandlerContext,
 
         return ctx.messageClient.addressChannels(message,
             actionBoard.channelName,
-            messageOptions)
-    })
+            messageOptions).then(z => {
+                logger.info("Returning activities")
+                const activities: ActionBoardActivity[] =
+                    includedActivities.map(i => { return { identifier: i.identifier, } });
+                return Promise.resolve(activities)
+            })
+    });
 }
 
 function priorityThenRecency(activity1: Activity, activity2: Activity): number {
@@ -311,6 +322,7 @@ interface Summary {
 }
 
 interface Activity {
+    identifier: string,
     priority: number,
     recency: number,
     appearance: slack.Attachment,

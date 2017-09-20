@@ -10,7 +10,7 @@ import {
   Tags,
 } from "@atomist/automation-client/Handlers";
 import axios from "axios";
-import { globalActionBoardTracker } from '../action-board/globalState';
+import { globalActionBoardTracker, affectedBy } from '../action-board/globalState';
 import { doWazzup } from '../action-board/ActionBoard';
 import * as slack from "@atomist/slack-messages/SlackMessages";
 
@@ -40,7 +40,7 @@ query GitHubIssueResult {
 }
 */
 
-@EventHandler("Notify channel on new issue and add comment to issue", `subscription CommentOnIssue
+@EventHandler("Notify channel on new issue and add comment to issue", `subscription UpdateActionBoardsOnIssue
 {
 Issue {
     repo {
@@ -70,7 +70,7 @@ Issue {
     updatedAt
   }
 }`)
-@Tags("issue", "comment")
+@Tags("action-board")
 export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
 
   @Secret(Secrets.ORG_TOKEN)
@@ -81,8 +81,10 @@ export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
     const githubToken = this.githubToken;
     const lastAction = issue.action;
 
-    const htmlUrlBase = issue.repo.org.provider ? issue.repo.org.provider.url : "https://github.com/"
+    //const htmlUrlBase = issue.repo.org.provider ? issue.repo.org.provider.url : "https://github.com/"
     const apiUrlBase = issue.repo.org.provider ? issue.repo.org.provider.apiUrl : "https://api.github.com/"
+
+    const apiUrl = `${apiUrlBase}/repos/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`
 
     //const htmlUrl = `${htmlUrlBase}/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`
     // const linkToIssue = slack.url(htmlUrl, `${issue.repo.org.owner}/${issue.repo.name}#${issue.name}`);
@@ -90,7 +92,7 @@ export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
     // const myIssue: GitHubIssueResult = {
     //     ...issue,
     //     html_url: htmlUrl,
-    //     url: `${apiUrlBase}/repos/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`,
+    //     url: ,
     //     // todo: just use repository
     //     repository_url: `${apiUrlBase}/repos/${issue.repo.org.owner}/${issue.repo.name}`,
     //     user: issue.openedBy,
@@ -100,7 +102,7 @@ export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
 
     const boardsToUpdate = globalActionBoardTracker.fetchAll();
 
-    const promises = boardsToUpdate.map(
+    const promises = boardsToUpdate.filter(ab => affectedBy(ab, { assignees: issue.assignees, apiUrl })).map(
       actionBoard => {
         return doWazzup(ctx,
           { ...actionBoard, ts: new Date().getTime() },

@@ -2,6 +2,10 @@ import { logger } from "@atomist/automation-client/internal/util/Logger";
 
 const fs = require("fs");
 
+export interface ActionBoardActivity {
+    identifier: string
+}
+
 export interface ActionBoardSpecifier {
     wazzupMessageId: string;
     channelId: string;
@@ -9,6 +13,21 @@ export interface ActionBoardSpecifier {
     githubName: string;
     collapse: boolean;
     ts: number;
+    activities?: ActionBoardActivity[]
+}
+
+export function affectedBy(actionBoard: ActionBoardSpecifier, issue: { apiUrl: string, assignees: { login: string }[] }): boolean {
+    if (!actionBoard.activities) {
+        return true;
+    }
+    if (issue.assignees.some(a => a.login === actionBoard.githubName)) {
+        return true;
+    }
+    if (actionBoard.activities.some(act => act.identifier === issue.apiUrl)) {
+        return true;
+    }
+    logger.info(`Skipping ${actionBoard.wazzupMessageId} because it wasn't affected by ${JSON.stringify(issue)}`);
+    return false;
 }
 
 export interface TrackActionBoards {
