@@ -30,7 +30,11 @@ export class HelloWorld implements HandleCommand {
                 return result.ChatTeam[0].members[0].person;
             })
             .then(person => {
-                return ctx.messageClient.respond(`Hello ${this.name} from ${person.forename} ${person.surname}`);
+                if (person) {
+                    return ctx.messageClient.respond(`Hello ${this.name} from ${person.forename} ${person.surname}`);
+                } else {
+                    return ctx.messageClient.respond(`Hello ${this.name}`);
+                }
             })
             .then(() => {
                 return { code: 0 };
