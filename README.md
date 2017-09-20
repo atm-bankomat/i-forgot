@@ -42,7 +42,7 @@ Put this token in an environment variable GITHUB_TOKEN, or stick it in the value
 You'll need `npm` (v5.4.1) and `node` (v8.4.0).
 
     - `npm install`
-    - `nom run compile`
+    - `npm run compile`
     - `npm run start`
 
 Your browser opens to a dashboard at localhost:2866.
