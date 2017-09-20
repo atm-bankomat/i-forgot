@@ -5,8 +5,10 @@ const fs = require("fs");
 export interface ActionBoardSpecifier {
     wazzupMessageId: string;
     channelId: string;
+    channelName: string;
     githubName: string;
     collapse: boolean;
+    ts: number;
 }
 
 export interface TrackActionBoards {

@@ -1,5 +1,5 @@
 import { Configuration } from "@atomist/automation-client/configuration";
-import { CommentOnIssue } from "./events/CommentOnIssue";
+import { UpdateActionBoardsOnIssue } from "./action-board/CommentOnIssue";
 import { NotifyOnPush } from "./events/NotifyOnPush";
 import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./action-board/ActionBoard";
 
@@ -23,7 +23,7 @@ export const configuration: Configuration = {
         () => new PostponeWork(),
     ],
     events: [
-        () => new CommentOnIssue(),
+        () => new UpdateActionBoardsOnIssue(),
         () => new NotifyOnPush(),
     ],
     token,

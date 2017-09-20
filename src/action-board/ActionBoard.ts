@@ -17,7 +17,7 @@ import { findLinkedRepositories, isWorkday, repositoryFromIssue, Repository, toE
 import { whereAmIRunning } from './Provenance';
 import { GitHubIssueResult, hasLabel, GitHubIssueSearchResult } from './GitHubApiTypes';
 import { MessageOptions, buttonForCommand, MessageClient } from '@atomist/automation-client/spi/message/MessageClient';
-import { globalActionBoardTracker } from './globalState';
+import { globalActionBoardTracker, ActionBoardSpecifier } from './globalState';
 
 
 const teamStream = "#team-stream";
@@ -30,6 +30,9 @@ const upNextLabelName = "up-next";
 @Tags("jessitron")
 export class ActionBoard implements HandleCommand {
     public static Name = "ActionBoard";
+
+    @MappedParameter(MappedParameters.SLACK_CHANNEL_NAME)
+    public channelName: string;
 
     @MappedParameter(MappedParameters.SLACK_CHANNEL)
     public channelId: string;
@@ -48,22 +51,26 @@ export class ActionBoard implements HandleCommand {
         const collapse: boolean = false;
         const ts = new Date().getTime();
         const channelId = this.channelId;
+        const channelName = this.channelName;
         const githubName = this.githubName;
         const githubToken = this.githubToken;
 
         const wazzupMessageId =
             `wazzup_${this.githubName}_${this.channelId}_${ts}`;
 
-        ctx.messageClient.respond("I hear you. Gathering data...",
+        ctx.messageClient.addressChannels("I hear you. Gathering data...",
+            channelName,
             { id: wazzupMessageId, ts: ts - 5 });
 
+        const actionBoard: ActionBoardSpecifier = { wazzupMessageId, channelId, channelName, githubName, collapse, ts }
 
         return doWazzup(ctx,
-            wazzupMessageId, channelId, githubName,
-            githubToken, triggeredByUser, collapse).then(() => {
-                globalActionBoardTracker.add({ wazzupMessageId, channelId, githubName, collapse });
-                return Promise.resolve({ code: 0 });
-            });
+            actionBoard,
+            githubToken, triggeredByUser
+        ).then(() => {
+            globalActionBoardTracker.add(actionBoard);
+            return Promise.resolve({ code: 0 });
+        });
     }
 }
 
@@ -76,10 +83,16 @@ export class ActionBoardUpdate implements HandleCommand {
     public channelId: string;
 
     @Parameter({ pattern: /^.*$/, required: true })
+    public channelName: string;
+
+    @Parameter({ pattern: /^.*$/, required: true })
     public githubName: string;
 
     @MappedParameter(MappedParameters.SLACK_USER_NAME)
     public slackName: string;
+
+    // @MappedParameter(MappedParameters.SLACK_USER)
+    // public slackUser: string;
 
     @Parameter({ pattern: /^.*$/, required: true })
     public wazzupMessageId: string;
@@ -97,9 +110,16 @@ export class ActionBoardUpdate implements HandleCommand {
         const ts = new Date().getTime();
 
         return doWazzup(ctx,
-            this.wazzupMessageId, this.channelId, this.githubName,
-            this.githubToken, triggeredByUser, collapse,
-            `Refresh requested by ${do_not_ping(this.slackName)}`).then(() => {
+            {
+                wazzupMessageId: this.wazzupMessageId,
+                channelId: this.channelId,
+                channelName: this.channelName,
+                githubName: this.githubName,
+                collapse,
+                ts
+            },
+            this.githubToken, triggeredByUser,
+            `Refresh requested by someone`).then(() => {
                 return Promise.resolve({ code: 0 });
             });
 
@@ -108,6 +128,7 @@ export class ActionBoardUpdate implements HandleCommand {
 function do_not_ping(username: string): string {
     return username.replace(/[a-z]/, "$1 ");
 }
+
 /*
  Here is the graphql I should be using instead:
  {
@@ -141,17 +162,14 @@ function do_not_ping(username: string): string {
 */
 
 export function doWazzup(ctx: HandlerContext,
-    wazzupMessageId: string,
-    channelId: string,
-    githubName: string,
+    actionBoard: ActionBoardSpecifier,
     githubToken: string,
     triggeredByUser: boolean,
-    collapse: boolean,
     provenanceMessage?: string,
 ): Promise<any> {
 
     function issues(): Promise<Activities> {
-        const query = `assignee:${githubName}+state:open`;
+        const query = `assignee:${actionBoard.githubName}+state:open`;
         const htmlSearch = encodeURI(`https://github.com/search?q=${query}&type=Issues`);
         const apiSearch = encodeURI(`https://api.github.com/search/issues?q=${query}`);
 
@@ -182,7 +200,7 @@ export function doWazzup(ctx: HandlerContext,
                 }
             };
 
-            const linkedRepoPromise: Promise<Repository[]> = findLinkedRepositories(ctx, channelId);
+            const linkedRepoPromise: Promise<Repository[]> = findLinkedRepositories(ctx, actionBoard.channelId);
 
             return linkedRepoPromise.then(linkedRepositories => {
 
@@ -224,17 +242,17 @@ export function doWazzup(ctx: HandlerContext,
         const futureActivities = issues.activities.filter(a => !a.current);
 
         const currentAttachments = currentActivities.map(a => a.appearance);
-        const futureAttachments = collapse ? [] : futureActivities.sort(priorityThenRecency).slice(0, 5).map(a => a.appearance);
+        const futureAttachments = actionBoard.collapse ? [] : futureActivities.sort(priorityThenRecency).slice(0, 5).map(a => a.appearance);
 
         const text = currentActivities.length > 0 ? `You are currently working on ${
             currentActivities.length === 1 ? "one thing:" : currentActivities.length + " things"}`
             : 'Here are some things you could do.';
 
-        const collapseButton = collapse ?
+        const collapseButton = actionBoard.collapse ?
             buttonForCommand({ text: "Expand" },
-                ActionBoardUpdate.Name, { githubName, channelId, wazzupMessageId, collapse: "false" }) :
+                ActionBoardUpdate.Name, { ...actionBoard, collapse: "false" }) :
             buttonForCommand({ text: "Collapse" },
-                ActionBoardUpdate.Name, { githubName, channelId, wazzupMessageId, collapse: "true" })
+                ActionBoardUpdate.Name, { ...actionBoard, collapse: "true" })
 
 
         const maintenanceAttachments = [{
@@ -242,14 +260,15 @@ export function doWazzup(ctx: HandlerContext,
             actions: [
                 buttonForCommand({ text: "Refresh" },
                     ActionBoardUpdate.Name,
-                    { githubName, channelId, wazzupMessageId }),
+                    { ...actionBoard, collapse: actionBoard.collapse ? "true" : "false" }),
                 collapseButton
             ]
         }]
 
-        const provenanceAttachments = collapse ? [] : [{
+        const provenanceAttachments = actionBoard.collapse ? [] : [{
             fallback: "provenance",
-            footer: provenance + `\n ID ${wazzupMessageId}${provenanceMessage ? `\nlast update: ${provenanceMessage}` : ""}`
+            footer: provenance +
+            `\n ID ${actionBoard.wazzupMessageId}${provenanceMessage ? `\nlast update: ${provenanceMessage}` : ""}`
         }];
 
         const message: slack.SlackMessage = {
@@ -262,14 +281,17 @@ export function doWazzup(ctx: HandlerContext,
         }
 
         const messageOptions: MessageOptions = {
-            id: wazzupMessageId,
+            id: actionBoard.wazzupMessageId,
             ttl: null, // always update the message if it exists
             post:
             triggeredByUser ? "always" :
-                "update_only"
+                "update_only",
+            ts: actionBoard.ts + 1,
         }
 
-        return ctx.messageClient.respond(message, messageOptions)
+        return ctx.messageClient.addressChannels(message,
+            actionBoard.channelName,
+            messageOptions)
     })
 }
 
