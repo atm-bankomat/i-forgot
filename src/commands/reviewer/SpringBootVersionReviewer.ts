@@ -1,8 +1,3 @@
-/**
- * Note this is NOT a realistic version check: We’re not testing the
- * mechanics of reviewers so we just search file content rather than use
- * something more sophisticated such as a microgrammar
- */
 
 import { CommandHandler, Parameter, Tags } from "@atomist/automation-client/decorators";
 import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
@@ -29,7 +24,7 @@ export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
         super(r => this.local ? Promise.resolve(true) : hasFile(this.githubToken, r.owner, r.repo, "pom.xml"));
     }
 
-    protected projectReviewer(): ProjectReviewer<ProjectReview> {
+    public projectReviewer(): ProjectReviewer<ProjectReview> {
         return (id, p) => {
             const pom = p.findFileSync("pom.xml");
             if (!pom) {
