@@ -1,76 +1,127 @@
-# README-Driven Development in process
+# @atomist/automation-client-samples
 
-hey y'all, this README represents what we're hoping customers will see. Some of the links in it are fiction. Let's smooth out all the bumps in it.
+This repository contains a couple examples of command and event handlers
+as well as ingestors for the Atomist API. 
 
-# Atomist automation node sample
+It uses the [`@atomist/automation-client`](https://github.com/atomist/automation-client-ts) 
+node module to implement a local client that connects to the Atomist API.
 
-Sample starting project for running development automations with Atomist, in TypeScript.
+## Getting Started
 
-## Background
+### Prerequisites
 
-Atomist is a toolset for development automation. Get more background on Atomist [here](docs/atomist.md).
+#### Access to Atomist testing environment
 
-## Try it out
+In order to get access to this preview, please reach out to members of Atomist
+in the #support channel of [atomist-community Slack team](https://join.atomist.com).
 
-You can run an automation node on your own computer, and customize it to do what you like. 
-Then you can deploy it to the cloud or your own infrastructure.
+You'll receive an invite to a Slack team and GitHub organization that can be
+used to explore this new approach to writing and running automations.
 
-You can either build automations for your GitHub organization and Slack team (if you have admin access), 
-or you can [try out Atomist in our sample organization and Slack team](docs/our-team.md) (not yet implemented).
+#### Node.js
 
-### Work in your own team
+Please install Node.js from https://nodejs.org/en/download/ .
 
-First, sign up with Atomist [LINK]. You'll need to invite the bot to Slack and tell it which GitHub organization to care about.
+To verify that the right versions are installed, please run:
 
-#### get the code
+```
+$ node -v
+v8.4.0
+$ npm -v
+5.4.1
+```
 
-Clone this repository, and then change a few things:
+## Running the samples
 
-Name your automation node: in [package.json](package.json), change "name" to something of your choice.
+### Cloning the repository and installing dependencies
 
-Associate with your Slack team: in Slack, ask atomist for your team id; `@atomist pwd` in DM to @atomist or any channel that @atomist has been invited to.
-In [atomist.config.ts](src/atomist.config.ts#L12), change "teamId" to the Slack ID of your team.
+To get started run the following commands:
 
-<img src="docs/images/find-team-id.png" width=243/>
+```
+$ git clone git@github.com:atomist/automation-client-samples-ts.git
+$ cd automation-client-samples-ts
+$ npm install
+```
 
-Authenticate: to verify that you belong in this team, provide a GitHub token with read:org permissions. Atomist uses this to check that you are a member of your team's GitHub organization.
+### Configuring your environment
 
-Put this token in an environment variable GITHUB_TOKEN, or stick it in the value of the "token" field in [atomist.config.ts](src/atomist.config.ts#L20).
+For the client to connect and authenticate to the Atomist API, a GitHub
+personal access token is required. 
 
-#### Run the automation node
+Please create a personal access token with `read:org` scope at https://github.com/settings/tokens.
 
-You'll need `npm` (v5.4.1) and `node` (v8.4.0).
+Once you obtained the token make it available to the client by exporting it
+into a environment variable:
 
-    - `npm install`
-    - `npm run compile`
-    - `npm run start`
+```
+$ export GITHUB_TOKEN=<your token goes here>
+```
 
-Your browser opens to a dashboard at localhost:2866.
+## Starting up the automation-client
 
-When the node starts up, it connects to the Atomist API. It registers subscriptions to events and Slack commands.
+To start the client, run the following command:
 
-Now activate some automations! This sample responds to `@atomist hello world` in Slack, so type that 
-in your Slack channel. Atomist will quiz you for the command's parameters (in this case, your name), and then respond with a Slack message. After that, your dashboard will show that the command automation fired. Tweak the response in 
-`hello world file.ts` and restart your node, if you like. (Or, start the node with `npm run autostart` for hot code reloading.)
+```
+$ cd automation-client-samples-ts
+$ npm run start
+```
+## Access to the Dashboard and GraphQL data explorer
 
-[TODO: bring back CommentOnIssue, but narrow it! the current implementation will hit any issue across the org and will confuse people. Have it DM the automation node administrator. Or narrow it to one repository, or only issues created by the admin ... something not org-wide.]
+When the automation client has successfully established a connection to the
+Atomist API server the Dashboard (work-in-progress) and GraphQL data explorer
+is available.
 
-#### Respond to repository events
+ * Dashboard: http://localhost:2866
+ * GraphQL Data Explorer: http://localhost:2866/graphql
 
-Now see your automation respond to an event! There's a sample event handler, [NotifyOnPush](src/events/NotifyOnPush.ts), that listens for GitHub push events and sends a message to a Slack channel. Which Slack channel? Why, any Slack channel you choose. 
+## Support
 
-You can link a channel to a repository right in Slack. Go to any Slack channel and invite Atomist with `/invite @atomist`, and atomist will ask you whether you'd like to associate a repository. Choose one from the list. Or, if atomist is already in the channel, try `@atomist repo <repository name>`. Now atomist is configured to know where to send messages about that repository.
+General support questions should be discussed in the `#support`
+channel on our community Slack team
+at [atomist-community.slack.com][slack].
 
-Make a push to the repository you selected (on any branch). The [NotifyOnPush](src/events/NotifyOnPush.ts) automation in your locally running node posts a message to the linked channel!
+If you find a problem, please create an [issue][].
 
-### Do more stuff
+[issue]: https://github.com/atomist/automation-samples-ts/issues
 
-From here, you can play. You can do more in Slack [MORE DOCS], 
-you can respond to PullRequests with comments and even automatic code modifications [MORE DOCS], and you can get more information about the events you're 
-responding to [MORE DOCS].
+## Development
 
-### Deploy the node 
+You will need to install [node][] to build and test this project.
 
-You can deploy the node anywhere. If you happen to use CloudFoundry, there's a [manifest.yml](manifest.yml) in this repository that'll work; you can `cf push` it right up.
+### Build and Test
 
+Command | Reason
+------- | ------
+`npm install` | to install all the required packages
+`npm run lint` | to run tslint against the TypeScript
+`npm run compile` | to compile all TypeScript into JavaScript
+`npm test` | to run tests and ensure everything is working
+`npm run autotest` | run tests continuously (you may also need to run `tsc -w`)
+`npm run clean` | remove stray compiled JavaScript files and build directory
 
+### Release
+
+To create a new release of the project, simply push a tag of the form
+`M.N.P` where `M`, `N`, and `P` are integers that form the next
+appropriate [semantic version][semver] for release.  The version in
+the package.json is replaced by the build and is totally ignored!  For
+example:
+
+[semver]: http://semver.org
+
+```
+$ git tag -a 1.2.3
+$ git push --tags
+```
+
+The Travis CI build (see badge at the top of this page) will publish
+the NPM module and automatically create a GitHub release using the tag
+name for the release and the comment provided on the annotated tag as
+the contents of the release notes.
+
+---
+Created by [Atomist][atomist].
+Need Help?  [Join our Slack team][slack].
+
+[atomist]: https://www.atomist.com/
+[slack]: https://join.atomist.com
