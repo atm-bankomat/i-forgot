@@ -1,4 +1,5 @@
 import { Configuration } from "@atomist/automation-client/configuration";
+import { guid } from "@atomist/automation-client/internal/util/string";
 import * as cfenv from "cfenv";
 
 import { HelloWorld } from "./commands/simple/HelloWorld";
@@ -13,7 +14,7 @@ const credService = appEnv.getServiceCreds("github-token");
 const token = credService ? credService.token : process.env.GITHUB_TOKEN;
 
 export const configuration: Configuration = {
-    name: pj.name,
+    name: `${pj.name}-${guid()}` ,
     version: pj.version,
     teamId: "T74GV0HDK",
     commands: [
