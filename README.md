@@ -1,28 +1,33 @@
 # @atomist/automation-client-samples
 
-This repository contains sample code demonstrating use of the Atomist API.  You will find examples illustrating
-command handlers, event handlers, and ingestors.
+This repository contains sample code demonstrating use of
+the [Atomist][atomist] API.  You will find examples illustrating:
 
-It uses the [`@atomist/automation-client`](https://github.com/atomist/automation-client-ts) 
-node module to implement a local client that connects to the Atomist API.
+-   Creating bot commands using _command handlers_
+-   Responding to DevOps events, e.g., someone commenting on an issue,
+    using _event handlers_
+-   Ingestors _(coming soon)_
 
-## Getting Started
+These example use the [`@atomist/automation-client`][client] node
+module to implement a local client that connects to the Atomist API.
 
-### Prerequisites
+[client]: https://github.com/atomist/automation-client-ts (@atomist/automation-client Node Module)
 
-#### Access to Atomist testing environment
+## Prerequisites
 
-In order to get access to this preview, please reach out to members of Atomist
-in the #support channel of [atomist-community Slack team](https://join.atomist.com).
+### Access to Atomist testing environment
 
-You'll receive an invite to a Slack team and GitHub organization that can be
-used to explore this new approach to writing and running automations.
+To get access to this preview, please reach out to members of Atomist
+in the `#support` channel of [atomist-community Slack team][slack].
 
-#### Node.js
+You'll receive an invitation to a Slack team and GitHub organization
+that can be used to explore this new approach to writing and running
+automations.
 
-Please install Node.js from https://nodejs.org/en/download/ .
+### Node.js
 
-To verify that the right versions are installed, please run:
+You will need to have [Node.js][node] installed.  To verify that the
+right versions are installed, please run:
 
 ```
 $ node -v
@@ -31,7 +36,7 @@ $ npm -v
 5.4.1
 ```
 
-## Running the samples
+[node]: https://nodejs.org/ (Node.js)
 
 ### Cloning the repository and installing dependencies
 
@@ -45,13 +50,14 @@ $ npm install
 
 ### Configuring your environment
 
-For the client to connect and authenticate to the Atomist API, a GitHub
-personal access token is required. 
+For the client to connect and authenticate to the Atomist API, a
+GitHub personal access token is required.
 
-Please create a personal access token with `read:org` scope at https://github.com/settings/tokens.
+Please create a personal access token with `read:org` scope at
+https://github.com/settings/tokens .
 
-Once you obtained the token make it available to the client by exporting it
-into a environment variable:
+Once you obtained the token make it available to the client by
+exporting it into a environment variable:
 
 ```
 $ export GITHUB_TOKEN=<your token goes here>
@@ -62,35 +68,71 @@ $ export GITHUB_TOKEN=<your token goes here>
 To start the client, run the following command:
 
 ```
-$ cd automation-client-samples-ts
 $ npm run start
 ```
 
 ## Invoking a command handler from Slack
 
-This samples project contains a simple [`HelloWorld`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/commands/simple/HelloWorld.ts) command handler that can be invoked with `@atomist hello world` in the testing Slack team. Once you've submitted the command in Slack, you'll see the incoming and outgoing messages show up in the logs of your local automation-client.
+This project contains the code to create and respond to a simple
+`hello world` bot command.  The code that defines the bot command and
+implements responding to the command, i.e., the _command handler_, can
+be found in [`HelloWorld.ts`][hello].  Once you have your local
+automation client running (the previous step in this guide), you can
+invoke the command handler by sending the Atomist bot the command in
+the `#general` channel of the testing Slack team:
 
-Finally you should see a response from the bot in Slack.
+```
+@atomist hello world
+```
+
+Once you've submitted the command in Slack, you'll see the incoming
+and outgoing messages show up in the logs of your locally running
+automation-client.  Ultimately, you should see the response from the
+bot in Slack.
+
+[hello]: https://github.com/atomist/automation-client-samples-ts/blob/master/src/commands/simple/HelloWorld.ts (HelloWorld Command Handler)
+
+Feel free to modify the code in the `HelloWorld` command handler,
+restart your local automation client, and see what happens!
 
 ## Triggering an event handler
 
-You can trigger the [`CommentOnIssue`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/events/CommentOnIssue.ts) event handler by simply creating a new issue in https://github.com/atomist-rugs/cd-test-01 and watching your terminal window.
+While command handlers respond to commands you send the Atomist bot,
+_event handlers_ take action when different types of events occur in
+your development and operations environment.  Some examples of events
+are commits are pushed to a repo, or a CI build fails, or an instance
+of a running service becomes unhealthy.  Example responses to those
+events are showing the commits in a Slack message, automatically
+restarting the build, and triggering a PagerDuty alert, respectively.
 
-The issue event will come in  and you'll see an outgoing message to Slack. This message is being sent to the `cd-test-01` channel in the testing Slack team.
+The sample event handler in this project will notice when a new issue
+is created in the [atomist-rugs][] GitHub organization and then send a
+Slack message and post its own comment on the issue.  You can trigger
+the [`CommentOnIssue`][issue-handler] event handler by
+simply
+[creating an issue in the atomist-rugs/cd-test-01 repo][create-issue].
+You should see that event appear in the console logs of your locally
+running automation client, followed by a log of the actions the event
+handler is taking.  Once those actions are complete, you should see a
+new message in the `#cd-test-01` channel in the testing Slack team and
+a new comment on the issue you just created.
+
+[issue-handler]: https://github.com/atomist/automation-client-samples-ts/blob/master/src/events/CommentOnIssue.ts (CommentOnIssue Event Handler)
+[create-issue]: https://github.com/atomist-rugs/cd-test-01/issues/new (Create Issue in atomist-rugs/cd-test-01)
 
 ## Dashboard and GraphQL data explorer
 
-When the automation client has successfully established a connection to the
-Atomist API server the Dashboard (work-in-progress) and GraphQL data explorer
-will be available.
+When the automation client has successfully established a connection
+to the Atomist API server, the Dashboard (work-in-progress) and
+GraphQL data explorer will be available.
 
- * Dashboard: http://localhost:2866
- * GraphQL Data Explorer: http://localhost:2866/graphql
+*   Dashboard: http://localhost:2866
+*   GraphQL Data Explorer: http://localhost:2866/graphql
 
 ## Support
 
 General support questions should be discussed in the `#support`
-channel on our community Slack team
+channel in our community Slack team
 at [atomist-community.slack.com][slack].
 
 If you find a problem, please create an [issue][].
@@ -106,6 +148,7 @@ You will need to install [node][] to build and test this project.
 Command | Reason
 ------- | ------
 `npm install` | to install all the required packages
+`npm run start` | to start the Atomist automation client
 `npm run lint` | to run tslint against the TypeScript
 `npm run compile` | to compile all TypeScript into JavaScript
 `npm test` | to run tests and ensure everything is working
