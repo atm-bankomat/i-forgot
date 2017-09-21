@@ -11,7 +11,7 @@ import {
     Secret,
     Secrets,
 } from "@atomist/automation-client/Handlers";
-import { logger } from "@atomist/automation-client/internal/util/Logger";
+import { logger } from "@atomist/automation-client/internal/util/logger";
 import * as slack from "@atomist/slack-messages/SlackMessages";
 import { teamStream } from "./helpers";
 import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';

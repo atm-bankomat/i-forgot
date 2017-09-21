@@ -11,7 +11,7 @@ import {
     Secret,
     Secrets,
 } from "@atomist/automation-client/Handlers";
-import { logger } from "@atomist/automation-client/internal/util/Logger";
+import { logger } from "@atomist/automation-client/internal/util/logger";
 import * as slack from "@atomist/slack-messages/SlackMessages";
 import { findLinkedRepositories, isWorkday, repositoryFromIssue, Repository, toEmoji, normalizeTimestamp, timeSince, inProgressLabelName } from "./helpers";
 import { whereAmIRunning } from './Provenance';

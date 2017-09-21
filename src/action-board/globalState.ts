@@ -1,4 +1,4 @@
-import { logger } from "@atomist/automation-client/internal/util/Logger";
+import { logger } from "@atomist/automation-client/internal/util/logger";
 
 const fs = require("fs");
 
