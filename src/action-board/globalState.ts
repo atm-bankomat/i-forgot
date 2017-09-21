@@ -26,7 +26,7 @@ export function affectedBy(actionBoard: ActionBoardSpecifier, issue: { apiUrl: s
     if (actionBoard.activities.some(act => act.identifier === issue.apiUrl)) {
         return true;
     }
-    logger.info(`Skipping ${actionBoard.wazzupMessageId} because it wasn't affected by ${JSON.stringify(issue)}`);
+    logger.info(`Skipping ${actionBoard.wazzupMessageId} with activities ${actionBoard.activities.map(a => a.identifier).join(" ")} because it wasn't affected by ${JSON.stringify(issue)}`);
     return false;
 }
 

@@ -5,6 +5,7 @@ import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./ac
 import * as cfenv from "cfenv";
 import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIssue";
 import { Unassign } from "./action-board/Unassign";
+import { CloseIssue } from "./action-board/Complete";
 
 const pj = require("../../package.json");
 
@@ -14,8 +15,8 @@ const credService = appEnv.getServiceCreds("github-token");
 const token = credService ? credService.token : process.env.GITHUB_TOKEN;
 
 export const configuration: Configuration = {
-    name: "jessitrons-unique-name-2",
-    version: "0.1.1",
+    name: "action-board",
+    version: "0.2.0",
     teamId: "T6MFSUPDL",
     commands: [
         () => new ActionBoard(),
@@ -23,10 +24,10 @@ export const configuration: Configuration = {
         () => new CommenceWork(),
         () => new PostponeWork(),
         () => new Unassign(),
+        () => new CloseIssue(),
     ],
     events: [
         () => new UpdateActionBoardsOnIssue(),
-        () => new NotifyOnPush(),
     ],
     token,
     http: {

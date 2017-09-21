@@ -19,6 +19,7 @@ import { GitHubIssueResult, hasLabel, GitHubIssueSearchResult } from './GitHubAp
 import { MessageOptions, buttonForCommand, MessageClient } from '@atomist/automation-client/spi/message/MessageClient';
 import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
 import { Unassign } from './Unassign';
+import { CloseIssue } from './Complete';
 
 
 const teamStream = "#team-stream";
@@ -398,7 +399,9 @@ function renderIssue(issue: GitHubIssueResult): slack.Attachment {
         attachment.color = "#EF64E1";
         attachment.actions = [
             buttonForCommand({ text: "Postpone" }, PostponeWork.Name,
-                { issueUrl: issue.url }, )
+                { issueUrl: issue.url }, ),
+            buttonForCommand({ text: "Complete!" }, CloseIssue.Name,
+                { issueUrl: issue.url })
         ]
     } else {
         attachment.actions = [

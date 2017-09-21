@@ -82,8 +82,8 @@ export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
     const githubToken = this.githubToken;
     const lastAction = issue.action;
 
-    //const htmlUrlBase = issue.repo.org.provider ? issue.repo.org.provider.url : "https://github.com/"
-    const apiUrlBase = issue.repo.org.provider ? issue.repo.org.provider.apiUrl : "https://api.github.com/"
+    //const htmlUrlBase = issue.repo.org.provider ? issue.repo.org.provider.url : "https://github.com"
+    const apiUrlBase = issue.repo.org.provider ? issue.repo.org.provider.apiUrl : "https://api.github.com"
 
     const apiUrl = `${apiUrlBase}/repos/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`
 
