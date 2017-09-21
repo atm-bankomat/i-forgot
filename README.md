@@ -68,21 +68,21 @@ $ npm run start
 
 ## Invoking a command handler from Slack
 
-This samples project contains a simple [`HelloWorld`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/commands/simple/HelloWorld.ts) command handler that can be invoked with `@atomist hello world` in the testing Slack team. Once you've submitted the command in Slack, you'll incoming and outgoing messages show up on your local automation-client.
+This samples project contains a simple [`HelloWorld`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/commands/simple/HelloWorld.ts) command handler that can be invoked with `@atomist hello world` in the testing Slack team. Once you've submitted the command in Slack, you'll see the incoming and outgoing messages show up in the logs of your local automation-client.
 
-Finally you should see a response form the bot in Slack.
+Finally you should see a response from the bot in Slack.
 
 ## Triggering an event handler
 
 You can trigger the [`CommentOnIssue`](https://github.com/atomist/automation-client-samples-ts/blob/master/src/events/CommentOnIssue.ts) event handler by simply creating a new issue in https://github.com/atomist-rugs/cd-test-01 and watching your terminal window.
 
-The issue event will comein  and you'll see an outgoing message to Slack. This message is being sent to the `cd-test-01` channel in the testing Slack team.
+The issue event will come in  and you'll see an outgoing message to Slack. This message is being sent to the `cd-test-01` channel in the testing Slack team.
 
 ## Dashboard and GraphQL data explorer
 
 When the automation client has successfully established a connection to the
 Atomist API server the Dashboard (work-in-progress) and GraphQL data explorer
-is available.
+will be available.
 
  * Dashboard: http://localhost:2866
  * GraphQL Data Explorer: http://localhost:2866/graphql
@@ -95,7 +95,7 @@ at [atomist-community.slack.com][slack].
 
 If you find a problem, please create an [issue][].
 
-[issue]: https://github.com/atomist/automation-samples-ts/issues
+[issue]: https://github.com/atomist/automation-client-samples-ts/issues
 
 ## Development
 
@@ -133,6 +133,7 @@ name for the release and the comment provided on the annotated tag as
 the contents of the release notes.
 
 ---
+
 Created by [Atomist][atomist].
 Need Help?  [Join our Slack team][slack].
 
