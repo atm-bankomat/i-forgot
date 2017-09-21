@@ -45,7 +45,7 @@
   "author": "Atomist, Inc.",
   "license": "GPL-3.0",
   "engines": {
-    "node": "8.5.x",
+    "node": "8.4.x",
     "npm": "5.3.x"
   }
 }

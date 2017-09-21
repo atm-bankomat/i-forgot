@@ -5,5 +5,3 @@ applications:
   buildpack: https://github.com/cloudfoundry/nodejs-buildpack
   env:
     SUPPRESS_NO_CONFIG_WARNING: true
-  services:
-  - github-token
