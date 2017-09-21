@@ -9,7 +9,7 @@ import { CloseIssue } from "./action-board/Complete";
 
 const pj = require("../../package.json");
 
-const token = process.env.GITHUB_TOKEN;
+const token = process.env["GITHUB_TOKEN"];
 
 export const configuration: Configuration = {
     name: "action-board",

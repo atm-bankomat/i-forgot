@@ -13,7 +13,7 @@ import {
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import * as slack from "@atomist/slack-messages/SlackMessages";
-import { teamStream } from "./helpers";
+import { teamStream, inProgressLabelName } from "./helpers";
 import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
 
 @CommandHandler("Complete this lovely issue", "I am all done with this one")
@@ -43,19 +43,36 @@ export class CloseIssue implements HandleCommand {
             `${slack.user(slackUser)} closed this issue: ` + this.issueUrl,
             teamStream);
 
-        const issueResource = encodeURI(`${issueUrl}?state=closed`);
+        const issueResource = encodeURI(`${issueUrl}`);
 
-        return axios({
+        const closePromise = axios({
             method: 'patch',
             url: issueResource,
-            headers: { Authorization: `token ${githubToken}` }
+            headers: { Authorization: `token ${githubToken}` },
+            data: {
+                "state": "closed"
+            }
         }).then((response) => {
             logger.info(`Successfully closed ${issueUrl}`)
-            return Promise.resolve({ code: 0 })
         }).catch(error => {
             ctx.messageClient.respond(`Failed to close ${issueUrl} ${error}`)
-            return Promise.resolve({ code: 1 })
+
         })
+
+        const removeLabelPromise = closePromise.then((response) => {
+            const labelResource = encodeURI(`${issueUrl}/labels/${inProgressLabelName}`);
+
+            return axios.delete(labelResource,
+                { headers: { Authorization: `token ${githubToken}` } }
+            ).then((response) => {
+                logger.info(`Successfully removed a label from ${issueUrl}`)
+            }).catch(error => {
+                ctx.messageClient.respond(`Failed to remove ${inProgressLabelName} label from ${issueUrl} ${error}`)
+            });
+        })
+
+        return removeLabelPromise.then(z =>
+            Promise.resolve({ code: 1 }))
     }
 }
 
