@@ -1,7 +1,7 @@
 # @atomist/automation-client-samples
 
-This repository contains a couple examples of command and event handlers
-as well as ingestors for the Atomist API. 
+This repository contains sample code demonstrating use of the Atomist API.  You will find examples illustrating
+command handlers, event handlers, and ingestors.
 
 It uses the [`@atomist/automation-client`](https://github.com/atomist/automation-client-ts) 
 node module to implement a local client that connects to the Atomist API.
