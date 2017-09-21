@@ -13,17 +13,17 @@ import {
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/Logger";
 import * as slack from "@atomist/slack-messages/SlackMessages";
-import { findLinkedRepositories, isWorkday, repositoryFromIssue, Repository, toEmoji, normalizeTimestamp, timeSince } from "./helpers";
+import { findLinkedRepositories, isWorkday, repositoryFromIssue, Repository, toEmoji, normalizeTimestamp, timeSince, inProgressLabelName } from "./helpers";
 import { whereAmIRunning } from './Provenance';
 import { GitHubIssueResult, hasLabel, GitHubIssueSearchResult } from './GitHubApiTypes';
 import { MessageOptions, buttonForCommand, MessageClient } from '@atomist/automation-client/spi/message/MessageClient';
 import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
+import { Unassign } from './Unassign';
 
 
 const teamStream = "#team-stream";
 const admin = "jessitron";
 const gitHubIssueColor = "0f67da";
-const inProgressLabelName = "in-progress";
 const upNextLabelName = "up-next";
 
 @CommandHandler("Presents a list of things to work on", "wazzup")
@@ -128,7 +128,7 @@ export class ActionBoardUpdate implements HandleCommand {
     }
 }
 function do_not_ping(username: string): string {
-    return username.replace(/[a-z]/, "$1 ");
+    return username.replace(/([a-z])/g, "$1 ");
 }
 
 /*
@@ -403,7 +403,9 @@ function renderIssue(issue: GitHubIssueResult): slack.Attachment {
     } else {
         attachment.actions = [
             buttonForCommand({ text: "Commence" }, CommenceWork.Name,
-                { issueUrl: issue.url }, )
+                { issueUrl: issue.url }),
+            buttonForCommand({ text: "Unassign me" }, Unassign.Name,
+                { issueUrl: issue.url })
         ]
     }
 
@@ -483,9 +485,9 @@ export class PostponeWork implements HandleCommand {
             `${slack.user(slackUser)} postponed work on this issue: ` + this.issueUrl,
             teamStream);
 
-        const addLabel = encodeURI(`${issueUrl}/labels/${inProgressLabelName}`);
+        const labelResource = encodeURI(`${issueUrl}/labels/${inProgressLabelName}`);
 
-        return axios.delete(addLabel,
+        return axios.delete(labelResource,
             { headers: { Authorization: `token ${githubToken}` } }
         ).then((response) => {
             logger.info(`Successfully removed a label from ${issueUrl}`)

@@ -4,6 +4,7 @@ import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./ac
 
 import * as cfenv from "cfenv";
 import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIssue";
+import { Unassign } from "./action-board/Unassign";
 
 const pj = require("../../package.json");
 
@@ -21,6 +22,7 @@ export const configuration: Configuration = {
         () => new ActionBoardUpdate(),
         () => new CommenceWork(),
         () => new PostponeWork(),
+        () => new Unassign(),
     ],
     events: [
         () => new UpdateActionBoardsOnIssue(),

@@ -43,6 +43,7 @@ query GitHubIssueResult {
 @EventHandler("Notify channel on new issue and add comment to issue", `subscription UpdateActionBoardsOnIssue
 {
 Issue {
+  name
     repo {
       name
       org {

@@ -2,6 +2,9 @@ import { HandlerContext } from '@atomist/automation-client/Handlers';
 import { logger } from "@atomist/automation-client/internal/util/Logger";
 import { GitHubIssueResult } from './GitHubApiTypes';
 
+export const teamStream = "#team-stream";
+export const inProgressLabelName = "in-progress";
+
 const reposLinkedToThisChannel = `query ($teamId: ID!, $channelId: ID!) {
   ChatTeam(id: $teamId) {
     channels(id: $channelId) {
