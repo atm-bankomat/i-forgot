@@ -1,10 +1,10 @@
 import { CommandHandler, Parameter, Tags } from "@atomist/automation-client/decorators";
-import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
-import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
 import { hasFile } from "@atomist/automation-client/internal/util/gitHub";
 import { ProjectReviewer } from "@atomist/automation-client/operations/review/ProjectReviewer";
-import { findFileMatches, Match } from "@atomist/automation-client/project/util/parseUtils";
+import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
+import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
 import { ProjectNonBlocking } from "@atomist/automation-client/project/Project";
+import { findFileMatches, Match } from "@atomist/automation-client/project/util/parseUtils";
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 import { PARENT_STANZA } from "../../grammars/MavenGrammars";
 
@@ -71,8 +71,9 @@ function findMatches<M>(p: ProjectNonBlocking,
         .then(fileHits => {
             let matches: Array<Match<M>> = [];
             for (const fh of fileHits) {
-                if (fh)
+                if (fh) {
                     matches = matches.concat(fh.matches);
+                }
             }
             return matches;
         });

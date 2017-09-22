@@ -33,9 +33,8 @@ export const GAV_GRAMMAR = Microgrammar.fromDefinitions<{ gav: VersionedArtifact
         const versions = ctx.tags.filter(tag => tag.name === "version");
         const version = versions.length === 1 ? versions[0].value : undefined;
         return { group, artifact, version };
-    }
+    },
 });
-
 
 export const PARENT_STANZA = Microgrammar.fromDefinitions<{ gav: VersionedArtifact }>({
     _start: "<parent>",

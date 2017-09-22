@@ -1,14 +1,14 @@
 import "mocha";
 
-import * as assert from "power-assert";
-import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
-import { NonSpringPom, springBootPom } from "./Poms";
-import {
-    SpringBootProjectReview,
-    SpringBootVersionReviewer
-} from "../../../src/commands/reviewer/SpringBootVersionReviewer";
 import { RepoId, SimpleRepoId } from "@atomist/automation-client/operations/common/RepoId";
 import { ProjectReviewer } from "@atomist/automation-client/operations/review/ProjectReviewer";
+import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
+import * as assert from "power-assert";
+import {
+    SpringBootProjectReview,
+    SpringBootVersionReviewer,
+} from "../../../src/commands/reviewer/SpringBootVersionReviewer";
+import { NonSpringPom, springBootPom } from "./Poms";
 
 describe("SpringBootVersionReviewer", () => {
 

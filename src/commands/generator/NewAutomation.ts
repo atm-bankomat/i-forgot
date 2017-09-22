@@ -1,6 +1,6 @@
 import { Parameter } from "@atomist/automation-client/decorators";
 import { UniversalSeed } from "@atomist/automation-client/operations/generate/UniversalSeed";
-import { ProjectNonBlocking, Project } from "@atomist/automation-client/project/Project";
+import { Project, ProjectNonBlocking } from "@atomist/automation-client/project/Project";
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 
 import { doWithFileMatches } from "@atomist/automation-client/project/util/parseUtils";

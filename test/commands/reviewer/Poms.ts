@@ -1,20 +1,21 @@
-export const NonSpringPom =
-    `<project>
+export const NonSpringPom = `<project>
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.mycompany.app</groupId>
   <artifactId>my-app</artifactId>
   <version>1</version>
   <packaging>pom</packaging>
- 
+
   <modules>
     <module>my-module</module>
   </modules>
 </project>`;
 
 export function springBootPom(bootVersion: string) {
-    return `
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+	http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.atomist.springteam</groupId>
 	<artifactId>spring-rest-seed</artifactId>
@@ -45,9 +46,9 @@ export function springBootPom(bootVersion: string) {
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>2.5</version>
-            </dependency>	    
+            </dependency>
         </dependencies>
-	</dependencyManagement>	
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
