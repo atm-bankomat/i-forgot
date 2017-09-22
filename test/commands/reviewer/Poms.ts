@@ -25,7 +25,7 @@ export function springBootPom(bootVersion: string) {
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.2.RELEASE</version>
+		<version>${bootVersion}</version>
 		<relativePath/>
 	</parent>
 	<properties>
