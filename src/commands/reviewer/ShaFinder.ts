@@ -9,8 +9,6 @@ import { Project } from "@atomist/automation-client/project/Project";
 @CommandHandler("Look for shas")
 export class ShaFinder extends ReviewerSupport<ProjectReview> {
 
-    public raiseIssues = false;
-
     protected projectReviewer(): ProjectReviewer<ProjectReview> {
         return (id: RepoId, p: Project) => {
             console.log("ShaFinder reviewing " + JSON.stringify(id));
