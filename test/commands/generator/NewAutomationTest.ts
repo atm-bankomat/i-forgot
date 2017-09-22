@@ -6,7 +6,7 @@ import { InMemoryFile } from "@atomist/automation-client/project/mem/InMemoryFil
 import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
 import { NodeFsLocalProject } from "@atomist/automation-client/project/local/NodeFsLocalProject";
 
-import { NewAutomation } from "../../../src/commands/generator/NewAutomation";
+import { atomistConfigTeamNameGrammar, NewAutomation } from "../../../src/commands/generator/NewAutomation";
 
 describe("NewAutomation", () => {
 
@@ -36,12 +36,41 @@ describe("NewAutomation", () => {
         seed.team = "T1000";
         seed.manipulateAndFlush(p)
             .then(p => {
-                //assert(p.fileCount === 2);
                 const newPackageJson = JSON.parse(p.findFileSync("package.json").getContentSync());
                 assert(newPackageJson.name === seed.targetRepo,
                     `Was [${newPackageJson.name}] expected [${seed.targetRepo}]`);
+
+                // teamId: "T1L0VDKJP",
+                const newAtomistConfig = p.findFileSync("src/atomist.config.ts").getContentSync();
+                assert(newAtomistConfig.includes(seed.team), "Actual content was\n" + newAtomistConfig);
                 done();
             }).catch(done);
     });
 
 });
+
+describe("atomist.config.ts microgrammar", () => {
+
+    it("should not match irrelevant gibberish", () => {
+        const thisIsALoadOfNonsense = "and then the clock struck 2";
+        assert(atomistConfigTeamNameGrammar.findMatches(thisIsALoadOfNonsense).length === 0);
+    });
+
+    it("should match actual content", () => {
+        const matches = atomistConfigTeamNameGrammar.findMatches(actualAtomistConfigTsFragment);
+        assert(matches.length === 1);
+        assert(matches[0].name === "T1L0VDKJP");
+    });
+
+});
+
+
+const actualAtomistConfigTsFragment = `
+export const configuration: Configuration = {
+    name: pj.name,
+    version: pj.version,
+    teamId: "T1L0VDKJP",
+    commands: [
+        () => new HelloWorld(),
+    ],
+    }`;

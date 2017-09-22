@@ -7,7 +7,7 @@ import { doWithMatches } from "@atomist/automation-client/project/util/parseUtil
 import { Project } from "@atomist/automation-client/project/Project";
 
 /**
- * Create a new automation from this repo
+ * Generator command to create a new node automation client repo
  */
 export class NewAutomation extends UniversalSeed {
 
@@ -20,32 +20,30 @@ export class NewAutomation extends UniversalSeed {
     })
     public team: string;
 
-    public manipulateAndFlush(project: Project): Promise<Project> {
-        return this.editPackageJson(project)
-            .then(_ => project.flush());
-        //this.editAtomistConfigTs(project);
+    constructor() {
+        super();
+        this.sourceRepo = "automation-client-samples-ts";
     }
 
-    protected editPackageJson(p: ProjectNonBlocking): Promise<any> {
-        return doWithMatches<{ name: string }>(p, "package.json", packageJsonNameGrammar, pkgJson => {
+    public manipulate(project: Project) {
+        this.editPackageJson(project);
+        this.editAtomistConfigTs(project);
+    }
+
+    protected editPackageJson(p: ProjectNonBlocking) {
+        doWithMatches<{ name: string }>(p, "package.json", packageJsonNameGrammar, pkgJson => {
             // There will be only one match
-            console.log("Matched " + pkgJson.file.path + " with " + pkgJson.matches.map(m => "[" + m.$matched + "]").join(","));
             pkgJson.makeUpdatable();
-            console.log("Existing name is " + pkgJson.matches[0].name);
             pkgJson.matches[0].name = this.targetRepo;
-            console.log("Updated to " + pkgJson.matches[0].name);
-        }).run();
+        }).defer();
     }
 
     protected editAtomistConfigTs(p: ProjectNonBlocking) {
-        return doWithMatches<{ name: string }>(p, "package.json", packageJsonNameGrammar, pkgJson => {
+        doWithMatches<{ name: string }>(p, "src/atomist.config.ts", atomistConfigTeamNameGrammar, atomistConfig => {
             // There will be only one match
-            console.log("Matched " + pkgJson.file.path + " with " + pkgJson.matches.map(m => "[" + m.$matched + "]").join(","));
-            pkgJson.makeUpdatable();
-            console.log("Existing name is " + pkgJson.matches[0].name);
-            pkgJson.matches[0].name = this.targetRepo;
-            console.log("Updated to " + pkgJson.matches[0].name);
-        }).run();
+            atomistConfig.makeUpdatable();
+            atomistConfig.matches[0].name = this.team;
+        }).defer();
     }
 }
 
@@ -57,9 +55,10 @@ const packageJsonNameGrammar = Microgrammar.fromDefinitions<{ name: string }>({
     _rq: '"',
 });
 
-const atomistConfigTeamNameGrammar = Microgrammar.fromString<{ name: string }>(
+// teamId: "T1L0VDKJP",
+export const atomistConfigTeamNameGrammar = Microgrammar.fromString<{ name: string }>(
     'teamId: "${name}"',
     {
-        name: /^T[0-9A-Z]+$/,
+        name: /T[0-9A-Z]+/,
     },
 );
