@@ -17,7 +17,6 @@ export const XML_TAG_WITH_SIMPLE_VALUE = {
     _r2: ">",
 };
 
-
 export interface XmlTag {
     name: string;
     value: string;
@@ -38,7 +37,7 @@ export const GAV_GRAMMAR = Microgrammar.fromDefinitions<{ gav: VersionedArtifact
 });
 
 
-export const PARENT_STANZA = Microgrammar.fromDefinitions<{gav: VersionedArtifact}>({
+export const PARENT_STANZA = Microgrammar.fromDefinitions<{ gav: VersionedArtifact }>({
     _start: "<parent>",
     _gav: GAV_GRAMMAR,
     gav: ctx => ctx._gav.gav,

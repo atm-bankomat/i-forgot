@@ -1,22 +1,18 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
-import * as cfenv from "cfenv";
 
 import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
 import { NotifyOnPush } from "./events/NotifyOnPush";
 
-const pj = require("../../package.json");
+// const pj = require("./package.json");
 
-const appEnv = cfenv.getAppEnv();
-const credService = appEnv.getServiceCreds("github-token");
-
-const token = credService ? credService.token : process.env.GITHUB_TOKEN;
+const token = process.env.GITHUB_TOKEN;
 
 export const configuration: Configuration = {
-    name: `${pj.name}-${guid()}` ,
-    version: pj.version,
-    teamId: "T74GV0HDK",
+    name: `aws-lambda-test-${guid()}` ,
+    version: `0.1.0`,
+    teamId: "T1L0VDKJP",
     commands: [
         () => new HelloWorld(),
     ],

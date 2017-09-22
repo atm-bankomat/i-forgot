@@ -1,10 +1,9 @@
 import { Parameter } from "@atomist/automation-client/decorators";
 import { UniversalSeed } from "@atomist/automation-client/operations/generate/UniversalSeed";
-import { ProjectNonBlocking } from "../../../../automation-client-ts/build/src/project/Project";
+import { ProjectNonBlocking, Project } from "@atomist/automation-client/project/Project";
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 
 import { doWithFileMatches } from "@atomist/automation-client/project/util/parseUtils";
-import { Project } from "@atomist/automation-client/project/Project";
 
 /**
  * Generator command to create a new node automation client repo
@@ -48,8 +47,8 @@ export class NewAutomation extends UniversalSeed {
 // "name": "@atomist/automation-client-samples",
 const packageJsonNameGrammar = Microgrammar.fromString<{ name: string }>(
     '"name": "${name}"', {
-    name: /[^"]+/,
-});
+        name: /[^"]+/,
+    });
 
 // teamId: "T1L0VDKJP",
 export const atomistConfigTeamNameGrammar = Microgrammar.fromString<{ name: string }>(

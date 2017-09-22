@@ -10,7 +10,88 @@ import {
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import { PushWithRepoSubscription } from "../schema";
 
-@EventHandler("Notify channel on push", GraphQL.subscriptionFromFile("graphql/push"))
+const Query = `
+subscription PushWithRepo {
+    Push {
+     builds {
+       buildUrl
+       name
+       provider
+       commit {
+         sha
+       }
+     }
+     before {
+       sha
+     }
+     after {
+       sha
+       statuses {
+         context
+         description
+         targetUrl
+       }
+     }
+     repo {
+       owner
+       name
+       channels {
+         name
+       }
+       labels {
+         name
+       }
+       org {
+         provider {
+           url
+           apiUrl
+           gitUrl
+         }
+       }
+     }
+     commits {
+       sha
+       resolves {
+         number
+         name
+         title
+       }
+       impact {
+         data
+         url
+       }
+       apps {
+         state
+         host
+         domain
+         data
+       }
+       tags {
+         name
+         release {
+           name
+         }
+         containers {
+           pods {
+             host
+             state
+             name
+           }
+         }
+       }
+       author {
+         login
+         person {
+           chatId {
+             screenName
+           }
+         }
+       }
+     }
+    }
+  }`;
+
+@EventHandler("Notify channel on push", Query)
 @Tags("push", "notification")
 export class NotifyOnPush implements HandleEvent<PushWithRepoSubscription> {
 
