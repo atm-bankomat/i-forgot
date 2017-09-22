@@ -13,7 +13,7 @@ const token = process.env["GITHUB_TOKEN"];
 
 export const configuration: Configuration = {
     name: "action-board",
-    version: "0.2.0",
+    version: "0.2.1",
     teamId: "T6MFSUPDL",
     commands: [
         () => new ActionBoard(),

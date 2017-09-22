@@ -39,9 +39,7 @@ export class CloseIssue implements HandleCommand {
         const githubName = this.githubName;
         const slackUser = this.slackUser;
 
-        ctx.messageClient.addressChannels(
-            `${slack.user(slackUser)} closed this issue: ` + this.issueUrl,
-            teamStream);
+
 
         const issueResource = encodeURI(`${issueUrl}`);
 
@@ -53,26 +51,30 @@ export class CloseIssue implements HandleCommand {
                 "state": "closed"
             }
         }).then((response) => {
-            logger.info(`Successfully closed ${issueUrl}`)
+            logger.info(`Successfully closed ${issueUrl}`);
+            ctx.messageClient.addressChannels(
+                `${slack.user(slackUser)} closed this issue: ` + this.issueUrl,
+                teamStream);
+            return { code: 0 };
         }).catch(error => {
-            ctx.messageClient.respond(`Failed to close ${issueUrl} ${error}`)
-
+            ctx.messageClient.respond(`Failed to close ${issueUrl} ${error}`);
+            return { code: 1 }
         })
 
-        const removeLabelPromise = closePromise.then((response) => {
+        const removeLabelPromise = closePromise.then((handlerResult) => {
             const labelResource = encodeURI(`${issueUrl}/labels/${inProgressLabelName}`);
-
             return axios.delete(labelResource,
                 { headers: { Authorization: `token ${githubToken}` } }
             ).then((response) => {
                 logger.info(`Successfully removed a label from ${issueUrl}`)
+                return handlerResult;
             }).catch(error => {
                 ctx.messageClient.respond(`Failed to remove ${inProgressLabelName} label from ${issueUrl} ${error}`)
+                return { code: 1 };
             });
         })
 
-        return removeLabelPromise.then(z =>
-            Promise.resolve({ code: 1 }))
+        return removeLabelPromise
     }
 }
 
