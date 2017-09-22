@@ -3,7 +3,7 @@ import { UniversalSeed } from "@atomist/automation-client/operations/generate/Un
 import { ProjectNonBlocking } from "../../../../automation-client-ts/build/src/project/Project";
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 
-import { doWithMatches } from "@atomist/automation-client/project/util/parseUtils";
+import { doWithFileMatches } from "@atomist/automation-client/project/util/parseUtils";
 import { Project } from "@atomist/automation-client/project/Project";
 
 /**
@@ -31,28 +31,24 @@ export class NewAutomation extends UniversalSeed {
     }
 
     protected editPackageJson(p: ProjectNonBlocking) {
-        doWithMatches<{ name: string }>(p, "package.json", packageJsonNameGrammar, pkgJson => {
+        doWithFileMatches<{ name: string }>(p, "package.json", packageJsonNameGrammar, pkgJson => {
             // There will be only one match
-            pkgJson.makeUpdatable();
             pkgJson.matches[0].name = this.targetRepo;
         }).defer();
     }
 
     protected editAtomistConfigTs(p: ProjectNonBlocking) {
-        doWithMatches<{ name: string }>(p, "src/atomist.config.ts", atomistConfigTeamNameGrammar, atomistConfig => {
+        doWithFileMatches<{ name: string }>(p, "src/atomist.config.ts", atomistConfigTeamNameGrammar, atomistConfig => {
             // There will be only one match
-            atomistConfig.makeUpdatable();
             atomistConfig.matches[0].name = this.team;
         }).defer();
     }
 }
 
-const packageJsonNameGrammar = Microgrammar.fromDefinitions<{ name: string }>({
-    _n: '"name"',
-    _c: ":",
-    _lq: '"',
-    name: /@[^"]+/,
-    _rq: '"',
+// "name": "@atomist/automation-client-samples",
+const packageJsonNameGrammar = Microgrammar.fromString<{ name: string }>(
+    '"name": "${name}"', {
+    name: /[^"]+/,
 });
 
 // teamId: "T1L0VDKJP",
