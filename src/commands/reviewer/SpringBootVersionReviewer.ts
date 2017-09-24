@@ -28,34 +28,28 @@ export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
     public projectReviewer(): ProjectReviewer<SpringBootProjectReview> {
         const desiredVersion = this.desiredBootVersion;
         return (id, p) => {
-            const pom = p.findFileSync("pom.xml");
-            if (!pom) {
-                return Promise.resolve(undefined);
-            } else {
-                return findMatches(p, "pom.xml", ParentStanzaGrammar)
-                    .then(matches => {
-                        if (matches.length > 0 && matches[0].gav.artifact === "spring-boot-starter-parent") {
-                            const version = matches[0].gav.version;
-                            const outDated = version !== this.desiredBootVersion;
-                            if (outDated) {
-                                return Promise.resolve({
-                                    repoId: id,
-                                    comments: [
-                                        {
-                                            severity: "info",
-                                            comment: "Old version of Spring Boot",
-                                        },
-                                    ],
-                                    version,
-                                    desiredVersion,
-                                } as SpringBootProjectReview);
-                            } else {
-                                return Promise.resolve(clean(id));
-                            }
+            return findMatches(p, "pom.xml", ParentStanzaGrammar)
+                .then(matches => {
+                    if (matches.length > 0 && matches[0].gav.artifact === "spring-boot-starter-parent") {
+                        const version = matches[0].gav.version;
+                        const outDated = version !== this.desiredBootVersion;
+                        if (outDated) {
+                            return Promise.resolve({
+                                repoId: id,
+                                comments: [
+                                    {
+                                        severity: "info",
+                                        comment: `Old version of Spring Boot: [${version}] - ` +
+                                                `should have been [${this.desiredBootVersion}]`,
+                                    },
+                                ],
+                                version,
+                                desiredVersion,
+                            } as SpringBootProjectReview);
                         }
-                        return Promise.resolve(clean(id));
-                    });
-            }
+                    }
+                    return Promise.resolve(clean(id));
+                });
         };
     }
 

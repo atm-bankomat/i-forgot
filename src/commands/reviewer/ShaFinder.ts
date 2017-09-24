@@ -6,11 +6,15 @@ import { ReviewerSupport } from "@atomist/automation-client/operations/review/Re
 import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
 import { Project } from "@atomist/automation-client/project/Project";
 
+/**
+ * Find shas in files. These should not be stored in repos.
+ */
 @CommandHandler("Look for shas")
 export class ShaFinder extends ReviewerSupport<ProjectReview> {
 
     public projectReviewer(): ProjectReviewer<ProjectReview> {
         return (id: RepoId, p: Project) => {
+            // TODO incomplete
             console.log("ShaFinder reviewing " + JSON.stringify(id));
             return Promise.resolve(clean(id));
         };
