@@ -1,9 +1,9 @@
 import "mocha";
 
 import { RepoId, SimpleRepoId } from "@atomist/automation-client/operations/common/RepoId";
+import { ProjectEditor } from "@atomist/automation-client/operations/edit/ProjectEditor";
 import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
 import * as assert from "power-assert";
-import { ProjectEditor } from "@atomist/automation-client/operations/edit/ProjectEditor";
 import { SpringBootVersionUpgrade } from "../../../src/commands/editor/SpringBootVersionUpgrade";
 import { NonSpringPom, springBootPom } from "../reviewer/Poms";
 
@@ -25,7 +25,7 @@ describe("SpringBootVersionUpgrade", () => {
     it("does nothing when project is already up to date", done => {
         const proj = InMemoryProject.of({
             path: "pom.xml",
-            content: springBootPom(new SpringBootVersionUpgrade().desiredBootVersion)
+            content: springBootPom(new SpringBootVersionUpgrade().desiredBootVersion),
         });
         const id: RepoId = new SimpleRepoId("a", "b");
         editor()(id, proj).then(er => {

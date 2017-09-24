@@ -1,10 +1,10 @@
 import { CommandHandler, Parameter, Tags } from "@atomist/automation-client/decorators";
 import { hasFile } from "@atomist/automation-client/internal/util/gitHub";
-import { ParentStanzaGrammar } from "../../grammars/MavenGrammars";
-import { EditResult, ProjectEditor } from "@atomist/automation-client/operations/edit/ProjectEditor";
-import { doWithAtMostOneMatch } from "@atomist/automation-client/project/util/parseUtils";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import { EditorCommandSupport } from "@atomist/automation-client/operations/edit/EditorCommandSupport";
+import { EditResult, ProjectEditor } from "@atomist/automation-client/operations/edit/ProjectEditor";
+import { doWithAtMostOneMatch } from "@atomist/automation-client/project/util/parseUtils";
+import { ParentStanzaGrammar } from "../../grammars/MavenGrammars";
 
 /**
  * Upgrade the version of Spring Boot projects to a desired version
@@ -45,9 +45,9 @@ export class SpringBootVersionUpgrade extends EditorCommandSupport {
                 .then(_ => {
                     return {
                         edited,
-                    }
+                    };
                 });
-        }
+        };
     }
 
 }
