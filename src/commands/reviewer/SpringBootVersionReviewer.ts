@@ -3,10 +3,8 @@ import { hasFile } from "@atomist/automation-client/internal/util/gitHub";
 import { ProjectReviewer } from "@atomist/automation-client/operations/review/ProjectReviewer";
 import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
 import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
-import { ProjectNonBlocking } from "@atomist/automation-client/project/Project";
-import { findFileMatches, Match } from "@atomist/automation-client/project/util/parseUtils";
-import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
-import { PARENT_STANZA } from "../../grammars/MavenGrammars";
+import { findMatches } from "@atomist/automation-client/project/util/parseUtils";
+import { ParentStanzaGrammar } from "../../grammars/MavenGrammars";
 
 @CommandHandler("Reviewer that flags old versions of Spring Boot", "review spring boot version")
 @Tags("atomist", "spring")
@@ -34,7 +32,7 @@ export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
             if (!pom) {
                 return Promise.resolve(undefined);
             } else {
-                return findMatches(p, "pom.xml", PARENT_STANZA)
+                return findMatches(p, "pom.xml", ParentStanzaGrammar)
                     .then(matches => {
                         if (matches.length > 0 && matches[0].gav.artifact === "spring-boot-starter-parent") {
                             const version = matches[0].gav.version;
@@ -61,22 +59,6 @@ export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
         };
     }
 
-}
-
-// TODO remove with 0.1.6 release of client
-function findMatches<M>(p: ProjectNonBlocking,
-                        globPattern: string,
-                        microgrammar: Microgrammar<M>): Promise<Array<Match<M>>> {
-    return findFileMatches(p, globPattern, microgrammar)
-        .then(fileHits => {
-            let matches: Array<Match<M>> = [];
-            for (const fh of fileHits) {
-                if (fh) {
-                    matches = matches.concat(fh.matches);
-                }
-            }
-            return matches;
-        });
 }
 
 export interface SpringBootProjectReview extends ProjectReview {

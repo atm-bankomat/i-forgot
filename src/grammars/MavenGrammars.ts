@@ -2,17 +2,17 @@ import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 import { atLeastOne } from "@atomist/microgrammar/Rep";
 import { VersionedArtifact } from "./VersionedArtifact";
 
-export const ELEMENT_NAME = /^[a-zA-Z_.0-9\-]+/;
+export const ElementName = /^[a-zA-Z_.0-9\-]+/;
 
-export const ELEMENT_CONTENT = /^[a-zA-Z_.0-9\-]+/;
+export const ElementContent = /^[a-zA-Z_.0-9\-]+/;
 
-export const XML_TAG_WITH_SIMPLE_VALUE = {
+export const XmlTagWithSimpleValueGrammar = {
     _l: "<",
-    name: ELEMENT_NAME,
+    name: ElementName,
     _r: ">",
-    value: ELEMENT_CONTENT,
+    value: ElementContent,
     _l2: "</",
-    _close: ELEMENT_NAME,
+    _close: ElementName,
     _ok: ctx => ctx._close === ctx.name,
     _r2: ">",
 };
@@ -22,8 +22,14 @@ export interface XmlTag {
     value: string;
 }
 
-export const GAV_GRAMMAR = Microgrammar.fromDefinitions<{ gav: VersionedArtifact }>({
-    tags: atLeastOne(XML_TAG_WITH_SIMPLE_VALUE),
+/**
+ * GAV can be in any order in Maven POMs, so this grammar is more
+ * complicated than it would seem
+ * @type {Microgrammar<{gav: VersionedArtifact}>}
+ */
+export const GavGrammar = Microgrammar.fromDefinitions<{ gav: VersionedArtifact }>({
+    tags: atLeastOne(XmlTagWithSimpleValueGrammar),
+    // We need both these for it to be valid. version is optional
     _valid: ctx =>
         ctx.tags.filter(t => t.name === "groupId").length > 0 &&
         ctx.tags.filter(t => t.name === "artifactId").length > 0,
@@ -36,8 +42,16 @@ export const GAV_GRAMMAR = Microgrammar.fromDefinitions<{ gav: VersionedArtifact
     },
 });
 
-export const PARENT_STANZA = Microgrammar.fromDefinitions<{ gav: VersionedArtifact }>({
+export const ParentStanzaGrammar = Microgrammar.fromDefinitions<ParentStanza>({
     _start: "<parent>",
-    _gav: GAV_GRAMMAR,
+    _gav: GavGrammar,
     gav: ctx => ctx._gav.gav,
+    // Pull this up so that we can modify it directly.
+    // We can't modify through gav property as it's computed by a function in GavGrammar
+    version: ctx => ctx._gav.tags.find(t => t.name === "version"),
 });
+
+export interface ParentStanza {
+    gav: VersionedArtifact;
+    version?: XmlTag;
+}
