@@ -2,7 +2,7 @@ import { CommandHandler, Parameter, Tags } from "@atomist/automation-client/deco
 import { hasFile } from "@atomist/automation-client/internal/util/gitHub";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import { EditorCommandSupport } from "@atomist/automation-client/operations/edit/EditorCommandSupport";
-import { EditResult, ProjectEditor } from "@atomist/automation-client/operations/edit/ProjectEditor";
+import { EditResult, ProjectEditor } from "@atomist/automation-client/operations/edit/projectEditor";
 import { doWithAtMostOneMatch } from "@atomist/automation-client/project/util/parseUtils";
 import { ParentStanzaGrammar } from "../../grammars/MavenGrammars";
 

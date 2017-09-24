@@ -1,6 +1,6 @@
 import { CommandHandler, Parameter, Tags } from "@atomist/automation-client/decorators";
 import { hasFile } from "@atomist/automation-client/internal/util/gitHub";
-import { ProjectReviewer } from "@atomist/automation-client/operations/review/ProjectReviewer";
+import { ProjectReviewer } from "@atomist/automation-client/operations/review/projectReviewer";
 import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
 import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
 import { findMatches } from "@atomist/automation-client/project/util/parseUtils";

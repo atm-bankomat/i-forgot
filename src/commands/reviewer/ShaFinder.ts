@@ -1,7 +1,7 @@
 
 import { CommandHandler } from "@atomist/automation-client/decorators";
 import { RepoId } from "@atomist/automation-client/operations/common/RepoId";
-import { ProjectReviewer } from "@atomist/automation-client/operations/review/ProjectReviewer";
+import { ProjectReviewer } from "@atomist/automation-client/operations/review/projectReviewer";
 import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
 import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
 import { Project } from "@atomist/automation-client/project/Project";

@@ -1,7 +1,7 @@
 import "mocha";
 
 import { RepoId, SimpleRepoId } from "@atomist/automation-client/operations/common/RepoId";
-import { ProjectReviewer } from "@atomist/automation-client/operations/review/ProjectReviewer";
+import { ProjectReviewer } from "@atomist/automation-client/operations/review/projectReviewer";
 import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
 import * as assert from "power-assert";
 import {
