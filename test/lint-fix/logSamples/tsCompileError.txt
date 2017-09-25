@@ -1,0 +1,114 @@
+WARNING: No configurations found in configuration directory:/Users/jessitron/code/atm-osphere/automation-client/config
+WARNING: To disable this warning set SUPPRESS_NO_CONFIG_WARNING in the environment.
+2017-09-25T21:03:45.266Z - info	: Using configuration from 'build/src/atomist.config.js'
+2017-09-25T21:03:45.274Z - debug	:
+{
+  "name": "automate-lint-fix",
+  "version": "0.2.3",
+  "teamId": "T6MFSUPDL",
+  "token": "3**************************************c",
+  "http": {
+    "enabled": true,
+    "auth": {
+      "basic": {
+        "enabled": false
+      },
+      "bearer": {
+        "enabled": false
+      }
+    }
+  }
+}
+/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/internal/metadata/metadataReading.js:56
+                throw new Error(`Validation of GraphQL subscription for event handler '${r.__name}' failed\n\n` +
+                ^
+
+Error: Validation of GraphQL subscription for event handler 'FailedBuildLog' failed
+
+Cannot query field "repo" on type "Status". [6,5]
+    repo {
+----^
+    at metadataFromDecorator (/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/internal/metadata/metadataReading.js:56:23)
+    at Object.metadataFromInstance (/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/internal/metadata/metadataReading.js:22:16)
+    at BuildableAutomationServer.fromEventHandlerInstance (/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/server/BuildableAutomationServer.js:54:38)
+    at AutomationClient.withEventHandler (/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/automationClient.js:31:26)
+    at config.events.forEach.e (/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/start.client.js:18:14)
+    at Array.forEach (<anonymous>)
+    at Object.<anonymous> (/Users/jessitron/code/atm-osphere/automation-client/node_modules/@atomist/automation-client/start.client.js:17:19)
+    at Module._compile (module.js:573:30)
+    at Object.Module._extensions..js (module.js:584:10)
+    at Module.load (module.js:507:32)
+    at tryModuleLoad (module.js:470:12)
+    at Function.Module._load (module.js:462:3)
+    at Function.Module.runMain (module.js:609:10)
+    at startup (bootstrap_node.js:158:16)
+    at bootstrap_node.js:578:3
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! @atm-osphere/action-board@0.1.1 start: `npm run compile && $(npm bin)/atomist-client `
+npm ERR! Exit status 1
+npm ERR!
+npm ERR! Failed at the @atm-osphere/action-board@0.1.1 start script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /Users/jessitron/.npm/_logs/2017-09-25T21_03_45_316Z-debug.log
+[travis-work !*] automation-client $ gs
+On branch travis-work
+Your branch is ahead of 'origin/travis-work' by 1 commit.
+  (use "git push" to publish your local commits)
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   src/lint-fix/BuildLog.ts
+	modified:   src/lint-fix/DistillFailedBuild.ts
+	modified:   src/lint-fix/travis/stuff.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[travis-work !*] automation-client $ git add .
+[travis-work !*] automation-client $ git commit -m "hypothetically"
+[travis-work 44603b2] hypothetically
+ 3 files changed, 59 insertions(+), 23 deletions(-)
+[travis-work *] automation-client $ gs
+On branch travis-work
+Your branch is ahead of 'origin/travis-work' by 2 commits.
+  (use "git push" to publish your local commits)
+nothing to commit, working tree clean
+[travis-work *] automation-client $ npm install
+added 10 packages, removed 2 packages and updated 10 packages in 11.266s
+[travis-work !*] automation-client $ npm run clean
+
+> @atm-osphere/action-board@0.1.1 clean /Users/jessitron/code/atm-osphere/automation-client
+> rm -f *-v8.log; rm -f profile.txt; rm -rf build; rm -rf target
+
+[travis-work !*] automation-client $ npm run compile
+
+> @atm-osphere/action-board@0.1.1 compile /Users/jessitron/code/atm-osphere/automation-client
+> tsc -p .
+
+src/commands/reviewer/ShaFinder.ts(10,14): error TS2415: Class 'ShaFinder' incorrectly extends base class 'ReviewerSupport<ProjectReview>'.
+  Property 'projectReviewer' is protected in type 'ShaFinder' but public in type 'ReviewerSupport<ProjectReview>'.
+npm ERR! code ELIFECYCLE
+npm ERR! errno 2
+npm ERR! @atm-osphere/action-board@0.1.1 compile: `tsc -p .`
+npm ERR! Exit status 2
+npm ERR!
+npm ERR! Failed at the @atm-osphere/action-board@0.1.1 compile script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /Users/jessitron/.npm/_logs/2017-09-25T21_05_26_935Z-debug.log
+[travis-work !*] automation-client $ gs
+On branch travis-work
+Your branch is ahead of 'origin/travis-work' by 2 commits.
+  (use "git push" to publish your local commits)
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   package-lock.json
+	modified:   package.json
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[travis-work !*] automation-client $ git add

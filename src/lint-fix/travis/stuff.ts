@@ -41,7 +41,8 @@ export function authorizeWithGithubToken(travisApiEndpoint: string, githubToken:
         })
 }
 
-export function logFromJobId(travisApiEndpoint: string, jobIdPromise: Promise<number | FailureReport>):
+export function logFromJobId(travisApiEndpoint: string,
+    jobIdPromise: Promise<number | FailureReport>):
     Promise<string | FailureReport> {
     return jobIdPromise.then(jobId => {
         if (isFailureReport(jobId)) { return jobId } else {

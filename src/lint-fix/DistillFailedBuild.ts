@@ -21,9 +21,11 @@ import { authorizeWithGithubToken, FailureReport, isFailureReport, commonTravisH
 import axios from "axios";
 
 import * as slack from "@atomist/slack-messages/SlackMessages";
+import { analyzeLog } from "./travis/grammar";
 
 const byStatus = `subscription FailedBuildByStatus {
   Status {
+      _id
     targetUrl
     context
     state
@@ -91,6 +93,8 @@ export class FailedBuildLog implements HandleEvent<any> {
         const githubToken = this.githubToken;
         const statusData = e.data.Status[0];
 
+        ctx.messageClient.addressUsers(`Got a status with id ${statusData._id}`, "jessitron");
+
         if (statusData.context === "continuous-integration/travis-ci/push" &&
             statusData.state === "failure") {
             const author: { screenName: string } | string = // string means error
@@ -127,8 +131,10 @@ export class FailedBuildLog implements HandleEvent<any> {
                 }
 
                 const channel = statusData.commit &&
+                    statusData.commit.repo &&
                     statusData.commit.repo.links &&
                     (statusData.repo.links.length > 1) &&
+                    statusData.repo.links[0].channel &&
                     statusData.repo.links[0].channel.name;
 
                 if (channel) {
@@ -209,10 +215,6 @@ function getLogSummary(travisApiEndpoint: string, githubToken: string,
     })
 }
 
-function analyzeLog(log: string): string {
-    // simplest thing: last few lines
-    return log.split("\n").slice(log.length - 30).join("\n");
-}
 
 interface TravisBuild {
     build: {
