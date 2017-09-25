@@ -2,6 +2,8 @@ import axios from 'axios';
 
 import { logger } from "@atomist/automation-client/internal/util/logger";
 
+export const publicTravisEndpoint = "https://api.travis-ci.org";
+
 export const commonTravisHeaders = {
     "User-Agent": "MyClient/1.0.0",
     "Accept": "application/vnd.travis-ci.2+json"

@@ -6,12 +6,16 @@ import {
     HandlerContext,
     HandlerResult,
     Tags,
+    Secret,
+    Secrets,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import { PushWithRepoSubscription } from "../schema";
 import { teamStream } from "../action-board/helpers";
-import { authorizeWithGithubToken, FailureReport, isFailureReport, commonTravisHeaders, logFromJobId } from "./travis/stuff";
-import axios as "axios";
+import { authorizeWithGithubToken, FailureReport, isFailureReport, commonTravisHeaders, logFromJobId, publicTravisEndpoint } from "./travis/stuff";
+import axios from "axios";
+
+import * as slack from "@atomist/slack-messages/SlackMessages";
 
 const byStatus = `subscription FailedBuildByStatus {
   Status {
@@ -72,9 +76,14 @@ subscription PushWithRepo {
 @Tags("travis")
 export class FailedBuildLog implements HandleEvent<any> {
 
+    @Secret(Secrets.USER_TOKEN)
+    public githubToken: string;
+
     public handle(e: EventFired<any>, ctx: HandlerContext): Promise<any> {
         logger.info(`Incoming event is %s`, JSON.stringify(e.data, null, 2));
 
+        const travisApiEndpoint = publicTravisEndpoint;
+        const githubToken = this.githubToken;
         const statusData = e.data.Status[0];
 
         if (statusData.context === "continuous-integration/travis-ci/push" &&
@@ -86,28 +95,52 @@ export class FailedBuildLog implements HandleEvent<any> {
                             !statusData.commit.author.person.chatId ? "No chat ID on person " + statusData.commit.author.login :
                                 !statusData.commit.author.person.chatId.screenName ?
                                     "No screen name on chatId for person " + + statusData.commit.author.login :
-                                    { screenName: statusData.commit.author.person.chatId.screenName }
+                                    { screenName: statusData.commit.author.person.chatId.screenName };
 
-            if (typeof author === "string") {
-                ctx.messageClient.addressChannels(
-                    `There was a failed build here: ${statusData.targetUrl} but I couldn't figure out whose it is. ${author}`,
-                    teamStream)
-                return Promise.resolve({ code: 1 });
-            }
 
-            const channel = statusData.repo.links && (statusData.repo.links.length > 1)
-                && statusData.repo.links[0].channel.name;
+            const logFuture: Promise<string> =
+                getLogSummary(travisApiEndpoint, githubToken, statusData.targetUrl).
+                    then(log => {
+                        if (isFailureReport(log)) {
+                            return `Failed to retrieve log. While ${log.circumstance}, ${log.error}`;
+                        } else {
+                            return log;
+                        }
+                    });
 
-            if (channel) {
-                ctx.messageClient.addressChannels(
-                    `I saw a failed build: ${statusData.targetUrl} with context ${statusData.context} `,
-                    channel);
-            }
+            logFuture.then(log => {
 
-            ctx.messageClient.addressUsers(
-                `I saw your failed build: ${statusData.targetUrl} with context ${statusData.context} `,
-                author.screenName)
-            return Promise.resolve({ code: 0 });
+                const text =
+                    `I saw a failed build: ${statusData.targetUrl} with context ${statusData.context}`;
+                const logAttachment = {
+                    fallback: "log goes here",
+                    text: log
+                }
+                const slackMessage: slack.SlackMessage = {
+                    text,
+                    attachments: [logAttachment]
+                }
+
+                const channel = (statusData.repo.links && (statusData.repo.links.length > 1)
+                    && statusData.repo.links[0].channel.name);
+
+                if (channel) {
+                    ctx.messageClient.addressChannels(slackMessage,
+                        channel);
+                }
+
+                if (typeof author === "string") {
+                    ctx.messageClient.addressChannels(
+                        `There was a failed build here: ${statusData.targetUrl} but I couldn't figure out whose it is. ${author}`,
+                        teamStream);
+                } else {
+                    ctx.messageClient.addressUsers(
+                        slackMessage, author.screenName);
+                }
+
+                return Promise.resolve({ code: 0 });
+            });
+
         } else {
             console.log(`this status event is not a failed Travis build: ${JSON.stringify(statusData)}`);
             return Promise.resolve({ code: 0 })
@@ -169,7 +202,8 @@ function getLogSummary(travisApiEndpoint: string, githubToken: string,
 }
 
 function analyzeLog(log: string): string {
-    return log;
+    // simplest thing: last few lines
+    return log.split("\n").slice(log.length - 30).join("\n");
 }
 
 interface TravisBuild {

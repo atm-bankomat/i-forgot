@@ -11,7 +11,7 @@ import {
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import axios from 'axios';
-import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport, logFromJobId } from "./travis/stuff";
+import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport, logFromJobId, publicTravisEndpoint } from "./travis/stuff";
 
 
 @CommandHandler("Fetch a build log from Travis", "fetch build log")
@@ -29,7 +29,7 @@ export class BuildLog implements HandleCommand {
         logger.info(`Trying to fetch build logs for `);
 
         const orgRepo = "atomist/microgrammar";
-        const travisApiEndpoint = "https://api.travis-ci.org";
+        const travisApiEndpoint = publicTravisEndpoint;
         const buildNumber = this.buildNumber;
         const githubToken = this.githubToken;
 
