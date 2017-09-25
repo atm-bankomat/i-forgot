@@ -6,6 +6,9 @@ export interface IdentifiedArtifact {
     artifact: string;
 }
 
+/**
+ * Represents a Maven GAV
+ */
 export interface VersionedArtifact extends IdentifiedArtifact {
 
     version: string;

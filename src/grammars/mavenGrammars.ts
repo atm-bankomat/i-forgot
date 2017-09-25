@@ -29,7 +29,8 @@ export interface XmlTag {
  */
 export const GavGrammar = Microgrammar.fromDefinitions<{ gav: VersionedArtifact }>({
     tags: atLeastOne(XmlTagWithSimpleValueGrammar),
-    // We need both these for it to be valid. version is optional
+    // This function validates the matches to date
+    // We need both groupId and artifactId for the GAV to be valid. version is optional
     _valid: ctx =>
         ctx.tags.filter(t => t.name === "groupId").length > 0 &&
         ctx.tags.filter(t => t.name === "artifactId").length > 0,
@@ -42,16 +43,28 @@ export const GavGrammar = Microgrammar.fromDefinitions<{ gav: VersionedArtifact 
     },
 });
 
-export const ParentStanzaGrammar = Microgrammar.fromDefinitions<ParentStanza>({
-    _start: "<parent>",
-    _gav: GavGrammar,
-    gav: ctx => ctx._gav.gav,
-    // Pull this up so that we can modify it directly.
-    // We can't modify through gav property as it's computed by a function in GavGrammar
-    version: ctx => ctx._gav.tags.find(t => t.name === "version"),
-});
-
-export interface ParentStanza {
+export interface ArtifactContainer {
     gav: VersionedArtifact;
     version?: XmlTag;
 }
+
+/**
+ * Grammar for an element, such as <dependency> or <parent>, that contains
+ * a distinct GAV
+ * @param {string} containerElementName
+ * @return {Microgrammar<ArtifactContainer>}
+ */
+function artifactContainerGrammar(containerElementName: string) {
+    return Microgrammar.fromDefinitions<ArtifactContainer>({
+        _start: `<${containerElementName}>`,
+        _gav: GavGrammar,
+        gav: ctx => ctx._gav.gav,
+        // Pull this up so that we can modify it directly.
+        // We can't modify through gav property as it's computed by a function in GavGrammar
+        version: ctx => ctx._gav.tags.find(t => t.name === "version"),
+    });
+}
+
+export const ParentStanzaGrammar = artifactContainerGrammar("parent");
+
+export const DependencyGrammar = artifactContainerGrammar("dependency");

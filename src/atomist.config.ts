@@ -1,6 +1,7 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
 
+import { SpringBootVersionReviewer } from "./commands/reviewer/SpringBootVersionReviewer";
 import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
 import { NotifyOnPush } from "./events/NotifyOnPush";
@@ -15,6 +16,7 @@ export const configuration: Configuration = {
     teamId: "T1L0VDKJP",
     commands: [
         () => new HelloWorld(),
+        () => new SpringBootVersionReviewer(),
     ],
     events: [
         () => new CommentOnIssue(),

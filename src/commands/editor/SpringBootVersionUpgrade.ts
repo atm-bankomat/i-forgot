@@ -4,7 +4,7 @@ import { logger } from "@atomist/automation-client/internal/util/logger";
 import { EditorCommandSupport } from "@atomist/automation-client/operations/edit/EditorCommandSupport";
 import { EditResult, ProjectEditor } from "@atomist/automation-client/operations/edit/projectEditor";
 import { doWithAtMostOneMatch } from "@atomist/automation-client/project/util/parseUtils";
-import { ParentStanzaGrammar } from "../../grammars/MavenGrammars";
+import { ParentStanzaGrammar } from "../../grammars/mavenGrammars";
 
 /**
  * Upgrade the version of Spring Boot projects to a desired version
