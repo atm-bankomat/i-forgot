@@ -25,12 +25,14 @@
     "tslint": "^5.4.3",
     "typedoc": "^0.8.0",
     "typescript": "2.5.2",
-    "typescript-formatter": "^6.0.0"
+    "typescript-formatter": "^6.0.0",
+    "graphql-code-generator": "^0.8.13"
   },
   "directories": {
     "test": "test"
   },
   "scripts": {
+    "gql-gen": "gql-gen --file node_modules/@atomist/automation-client/graph/schema.cortex.json --template typescript -m --out ./src/typings/ \"./graphql/**/*.graphql\"",
     "autotest": "supervisor -q -n exit -e ts -x npm -- run test",
     "clean": "rm -f *-v8.log; rm -f profile.txt; rm -rf build; rm -rf target",
     "compile": "tsc -p .",
