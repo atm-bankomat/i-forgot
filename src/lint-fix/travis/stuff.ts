@@ -38,3 +38,27 @@ export function authorizeWithGithubToken(travisApiEndpoint: string, githubToken:
             }
         })
 }
+
+export function logFromJobId(travisApiEndpoint: string, jobId: number):
+    Promise<string | FailureReport> {
+    const url = `${travisApiEndpoint}/jobs/${jobId}/log`
+    // what happens if this is not available yet? I do not know. Then would we have a log ID in the job info?
+    // because we don't have that, in this old build.
+    return axios.get(url,
+        {
+            headers: {
+                ...commonTravisHeaders,
+                "Accept": "text/plain"
+            }
+        }).then(response => {
+            const data = response.data as string;
+            console.log("Received: " + JSON.stringify(response.data));
+            return data;
+        }).catch(e => {
+            logger.error("Failure retrieving log: " + e)
+            return {
+                circumstance: "getting: " + url,
+                error: e
+            }
+        })
+}

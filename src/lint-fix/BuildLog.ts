@@ -11,7 +11,7 @@ import {
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import axios from 'axios';
-import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport } from "./travis/stuff";
+import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport, logFromJobId } from "./travis/stuff";
 
 
 @CommandHandler("Fetch a build log from Travis", "fetch build log")
@@ -76,26 +76,7 @@ export class BuildLog implements HandleCommand {
                     }
                 }
                 const jobId = jobIds[0]; // can there be more than one? what does it mean if there is?
-                const url = `${travisApiEndpoint}/jobs/${jobId}/log`
-                // what happens if this is not available yet? I do not know. Then would we have a log ID in the job info?
-                // because we don't have that, in this old build.
-                return axios.get(url,
-                    {
-                        headers: {
-                            ...commonTravisHeaders,
-                            "Accept": "text/plain"
-                        }
-                    }).then(response => {
-                        const data = response.data as string;
-                        console.log("Received: " + JSON.stringify(response.data));
-                        return data;
-                    }).catch(e => {
-                        logger.error("Failure retrieving build: " + e)
-                        return {
-                            circumstance: "getting: " + url,
-                            error: e
-                        }
-                    })
+                return logFromJobId(travisApiEndpoint, jobId);
             }
         })
 
