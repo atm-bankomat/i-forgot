@@ -4,7 +4,7 @@
   "repository": "git@github.com:atm-osphere/automation-client.git",
   "description": "This is my first Atomist automation node",
   "dependencies": {
-    "@atomist/automation-client": "^0.1.3",
+    "@atomist/automation-client": "^0.1.8",
     "@atomist/slack-messages": "^0.11.0",
     "@types/winston": "^2.3.5",
     "cfenv": "^1.0.4",
@@ -18,6 +18,8 @@
     "espower-typescript": "^8.0.2",
     "mocha": "^3.5.3",
     "power-assert": "^1.4.4",
+    "@types/power-assert": "^1.4.29",
+    "@types/mocha": "^2.2.41",
     "supervisor": "^0.12.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.4.3",
