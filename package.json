@@ -1,6 +1,6 @@
 {
   "name": "@atm-osphere/action-board",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "git@github.com:atm-osphere/automation-client.git",
   "description": "This is my first Atomist automation node",
   "dependencies": {
