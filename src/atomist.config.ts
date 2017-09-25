@@ -1,8 +1,7 @@
 import { Configuration } from "@atomist/automation-client/configuration";
-import { NotifyOnPush } from "./events/NotifyOnPush";
+import { guid } from "@atomist/automation-client/internal/util/string";
 import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./action-board/ActionBoard";
 
-import * as cfenv from "cfenv";
 import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIssue";
 import { Unassign } from "./action-board/Unassign";
 import { CloseIssue } from "./action-board/Complete";
