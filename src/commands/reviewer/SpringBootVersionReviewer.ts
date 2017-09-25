@@ -27,7 +27,7 @@ export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
 
     public projectReviewer(): ProjectReviewer<SpringBootProjectReview> {
         const desiredVersion = this.desiredBootVersion;
-        return (id, p) => {
+        return (id, p, context) => {
             return findMatches(p, "pom.xml", ParentStanzaGrammar)
                 .then(matches => {
                     if (matches.length > 0 && matches[0].gav.artifact === "spring-boot-starter-parent") {

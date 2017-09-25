@@ -19,7 +19,7 @@ describe("SpringBootVersionReviewer", () => {
     it("no comments for non Spring project", done => {
         const proj = InMemoryProject.of({path: "pom.xml", content: NonSpringPom});
         const id: RepoId = new SimpleRepoId("a", "b");
-        reviewer()(id, proj).then(rev => {
+        reviewer()(id, proj, null).then(rev => {
             assert(rev.repoId.owner === id.owner);
             assert(rev.repoId.repo === id.repo);
             assert(rev.comments.length === 0);
@@ -33,7 +33,7 @@ describe("SpringBootVersionReviewer", () => {
         const v = "1.3.0";
         const proj = InMemoryProject.of({path: "pom.xml", content: springBootPom(v) });
         const id: RepoId = new SimpleRepoId("a", "b");
-        reviewer()(id, proj).then(rev => {
+        reviewer()(id, proj, null).then(rev => {
             assert(rev.repoId.owner === id.owner);
             assert(rev.repoId.repo === id.repo);
             assert(rev.comments.length === 1);
