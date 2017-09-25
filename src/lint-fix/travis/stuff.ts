@@ -41,26 +41,98 @@ export function authorizeWithGithubToken(travisApiEndpoint: string, githubToken:
         })
 }
 
-export function logFromJobId(travisApiEndpoint: string, jobId: number):
+export function logFromJobId(travisApiEndpoint: string, jobIdPromise: Promise<number | FailureReport>):
     Promise<string | FailureReport> {
-    const url = `${travisApiEndpoint}/jobs/${jobId}/log`
-    // what happens if this is not available yet? I do not know. Then would we have a log ID in the job info?
-    // because we don't have that, in this old build.
-    return axios.get(url,
-        {
-            headers: {
-                ...commonTravisHeaders,
-                "Accept": "text/plain"
+    return jobIdPromise.then(jobId => {
+        if (isFailureReport(jobId)) { return jobId } else {
+            const url = `${travisApiEndpoint}/jobs/${jobId}/log`
+            // what happens if this is not available yet? I do not know. Then would we have a log ID in the job info?
+            // because we don't have that, in this old build.
+            return axios.get(url,
+                {
+                    headers: {
+                        ...commonTravisHeaders,
+                        "Accept": "text/plain"
+                    }
+                }).then(response => {
+                    const data = response.data as string;
+                    console.log("Received: " + JSON.stringify(response.data));
+                    return data;
+                }).catch(e => {
+                    logger.error("Failure retrieving log: " + e)
+                    return {
+                        circumstance: "getting: " + url,
+                        error: e
+                    }
+                })
+        }
+    });
+}
+
+
+interface TravisBuilds {
+    builds: {
+        id: number,
+        job_ids: number[],
+        state: string,
+    }[],
+    commits: {
+        id: number,
+        sha: string,
+        branch: string,
+    }[]
+}
+
+export type JobId = number;
+
+
+export function jobIdForBuild(travisApiEndpoint: string,
+    auth: Promise<TravisAuth | FailureReport>,
+    repoSlug: string,
+    buildNumber: string
+): Promise<JobId | FailureReport> {
+
+    const buildInfo: Promise<TravisBuilds | FailureReport> = auth.then(a => {
+        if (isFailureReport(a)) { return a } else {
+            const url = `${travisApiEndpoint}/repos/${repoSlug}/builds?number=${buildNumber}`
+            return axios.get(url,
+                {
+                    headers: {
+                        ...commonTravisHeaders,
+                        "Authorization": `token ${a.access_token}`
+                    }
+                }).then(response => {
+                    const data = response.data as TravisBuilds;
+                    if (data.builds.length === 0) {
+                        return {
+                            circumstance: "Fetched build with: " + url,
+                            error: "There are no builds returned",
+                        }
+                    }
+                    console.log("Received: " + JSON.stringify(response.data));
+                    return data;
+                }).catch(e => {
+                    logger.error("Failure retrieving repo: " + e)
+                    return {
+                        circumstance: "getting: " + url,
+                        error: e
+                    }
+                })
+        }
+    });
+
+    return buildInfo.then(b => {
+        if (isFailureReport(b)) { return b } else {
+            const jobIds = b.builds[0].job_ids
+            console.log("Job IDs: " + JSON.stringify(jobIds));
+            if (!jobIds || jobIds.length === 0) {
+                return {
+                    circumstance: `getting job IDs out of build ${b.builds[0].id} info: ${jobIds}`,
+                    error: "no Job ID",
+                }
             }
-        }).then(response => {
-            const data = response.data as string;
-            console.log("Received: " + JSON.stringify(response.data));
-            return data;
-        }).catch(e => {
-            logger.error("Failure retrieving log: " + e)
-            return {
-                circumstance: "getting: " + url,
-                error: e
-            }
-        })
+            const jobId = jobIds[0]; // can there be more than one? what does it mean if there is?
+            return jobId;
+        }
+    })
 }

@@ -8,11 +8,16 @@ import {
     Tags,
     Secret,
     Secrets,
+    HandleCommand,
+    CommandHandler,
+    Parameter,
+    MappedParameters,
+    MappedParameter,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import { PushWithRepoSubscription } from "../schema";
 import { teamStream } from "../action-board/helpers";
-import { authorizeWithGithubToken, FailureReport, isFailureReport, commonTravisHeaders, logFromJobId, publicTravisEndpoint } from "./travis/stuff";
+import { authorizeWithGithubToken, FailureReport, isFailureReport, commonTravisHeaders, logFromJobId, publicTravisEndpoint, jobIdForBuild } from "./travis/stuff";
 import axios from "axios";
 
 import * as slack from "@atomist/slack-messages/SlackMessages";
@@ -22,7 +27,8 @@ const byStatus = `subscription FailedBuildByStatus {
     targetUrl
     context
     state
-    repo {
+    commit {
+      repo {
         name
         owner
         links {
@@ -31,7 +37,6 @@ const byStatus = `subscription FailedBuildByStatus {
         }
       }
     }
-    commit {
       author {
         login
         person {
@@ -121,8 +126,10 @@ export class FailedBuildLog implements HandleEvent<any> {
                     attachments: [logAttachment]
                 }
 
-                const channel = (statusData.repo.links && (statusData.repo.links.length > 1)
-                    && statusData.repo.links[0].channel.name);
+                const channel = statusData.commit &&
+                    statusData.commit.repo.links &&
+                    (statusData.repo.links.length > 1) &&
+                    statusData.repo.links[0].channel.name;
 
                 if (channel) {
                     ctx.messageClient.addressChannels(slackMessage,
@@ -181,7 +188,7 @@ function getLogSummary(travisApiEndpoint: string, githubToken: string,
         }
     });
 
-    const logPromise = buildPromise.then(b => {
+    const jobId = buildPromise.then(b => {
         if (isFailureReport(b)) { return b } else {
             const jobIds = b.build.job_ids;
             if (!jobIds || jobIds.length < 1) {
@@ -190,9 +197,10 @@ function getLogSummary(travisApiEndpoint: string, githubToken: string,
                     error: "No job ID"
                 }
             }
-            return logFromJobId(travisApiEndpoint, jobIds[0]);
+            return jobIds[0];
         }
     });
+    const logPromise = logFromJobId(travisApiEndpoint, jobId);
 
     return logPromise.then(log => {
         if (isFailureReport(log)) { return log } else {
@@ -212,4 +220,53 @@ interface TravisBuild {
         job_ids: number[],
         state: string,
     }
+}
+
+
+@CommandHandler("Fetch a build log from Travis", "summarize build log")
+@Tags("travis")
+export class DistillBuildLog implements HandleCommand {
+
+    @Parameter({ pattern: /^[0-9]+$/ })
+    public buildNumber: string;
+
+    @MappedParameter(MappedParameters.GITHUB_REPOSITORY)
+    public repository;
+
+    @MappedParameter(MappedParameters.GITHUB_REPO_OWNER)
+    public owner;
+
+    @Secret(Secrets.USER_TOKEN)
+    public githubToken;
+
+    handle(ctx: HandlerContext): Promise<HandlerResult> {
+        const githubToken = this.githubToken;
+        const repoSlug = `${this.owner}/${this.repository}`;
+        const travisApiEndpoint = publicTravisEndpoint;
+        const buildNumber = this.buildNumber;
+
+        const auth = authorizeWithGithubToken(travisApiEndpoint, githubToken);
+
+        const jobId = jobIdForBuild(travisApiEndpoint, auth, repoSlug, buildNumber);
+
+        const log = logFromJobId(travisApiEndpoint, jobId)
+
+        return log.then(logText => {
+            if (isFailureReport(logText)) {
+                ctx.messageClient.respond(`Log fetch failed when ${logText.circumstance}: ${logText.error}`);
+                return { code: 1 }
+            } else {
+                const msg: slack.SlackMessage = {
+                    text: `Here is a piece of the log for build ${buildNumber}`,
+                    attachments: [{
+                        fallback: "log goes here",
+                        text: analyzeLog(logText)
+                    }]
+                }
+                ctx.messageClient.respond(msg)
+                return { code: 0 }
+            }
+        })
+    }
+
 }

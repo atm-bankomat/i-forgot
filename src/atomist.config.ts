@@ -6,7 +6,7 @@ import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIs
 import { Unassign } from "./action-board/Unassign";
 import { CloseIssue } from "./action-board/Complete";
 import { BuildLog } from "./lint-fix/BuildLog";
-import { FailedBuildLog } from "./lint-fix/DistillFailedBuild";
+import { FailedBuildLog, DistillBuildLog } from "./lint-fix/DistillFailedBuild";
 import { BuildOnTravis } from "./lint-fix/BuildOnTravis";
 
 const pj = require("../../package.json");
@@ -27,6 +27,7 @@ export const configuration: Configuration = {
         // build
         () => new BuildLog(),
         () => new BuildOnTravis(),
+        () => new DistillBuildLog(),
     ],
     events: [
         //  () => new UpdateActionBoardsOnIssue(),

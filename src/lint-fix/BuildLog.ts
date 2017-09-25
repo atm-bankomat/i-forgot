@@ -11,7 +11,7 @@ import {
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import axios from 'axios';
-import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport, logFromJobId, publicTravisEndpoint } from "./travis/stuff";
+import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport, logFromJobId, publicTravisEndpoint, jobIdForBuild } from "./travis/stuff";
 
 
 @CommandHandler("Fetch a build log from Travis", "fetch build log")
@@ -36,49 +36,9 @@ export class BuildLog implements HandleCommand {
         const auth: Promise<TravisAuth | FailureReport> =
             authorizeWithGithubToken(travisApiEndpoint, githubToken);
 
-        const buildInfo: Promise<TravisBuilds | FailureReport> = auth.then(a => {
-            if (isFailureReport(a)) { return a } else {
-                const url = `${travisApiEndpoint}/repos/${orgRepo}/builds?number=${buildNumber}`
-                return axios.get(url,
-                    {
-                        headers: {
-                            ...commonTravisHeaders,
-                            "Authorization": `token ${a.access_token}`
-                        }
-                    }).then(response => {
-                        const data = response.data as TravisBuilds;
-                        if (data.builds.length === 0) {
-                            return {
-                                circumstance: "Fetched build with: " + url,
-                                error: "There are no builds returned",
-                            }
-                        }
-                        console.log("Received: " + JSON.stringify(response.data));
-                        return data;
-                    }).catch(e => {
-                        logger.error("Failure retrieving repo: " + e)
-                        return {
-                            circumstance: "getting: " + url,
-                            error: e
-                        }
-                    })
-            }
-        });
+        const buildInfo = jobIdForBuild(travisApiEndpoint, auth, orgRepo, buildNumber)
 
-        const logText: Promise<string | FailureReport> = buildInfo.then(b => {
-            if (isFailureReport(b)) { return b } else {
-                const jobIds = b.builds[0].job_ids
-                console.log("Job IDs: " + JSON.stringify(jobIds));
-                if (!jobIds || jobIds.length === 0) {
-                    return {
-                        circumstance: `getting job IDs out of build ${b.builds[0].id} info: ${jobIds}`,
-                        error: "no Job ID",
-                    }
-                }
-                const jobId = jobIds[0]; // can there be more than one? what does it mean if there is?
-                return logFromJobId(travisApiEndpoint, jobId);
-            }
-        })
+        const logText = logFromJobId(travisApiEndpoint, buildInfo);
 
         return logText.then(c => {
             if (isFailureReport(c)) {
@@ -92,17 +52,3 @@ export class BuildLog implements HandleCommand {
 
     }
 }
-
-interface TravisBuilds {
-    builds: {
-        id: number,
-        job_ids: number[],
-        state: string,
-    }[],
-    commits: {
-        id: number,
-        sha: string,
-        branch: string,
-    }[]
-}
-
