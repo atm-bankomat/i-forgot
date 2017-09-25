@@ -11,11 +11,8 @@ import {
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import axios from 'axios';
+import { authorizeWithGithubToken, commonTravisHeaders, TravisAuth, FailureReport, isFailureReport } from "./travis/stuff";
 
-const commonTravisHeaders = {
-    "User-Agent": "MyClient/1.0.0",
-    "Accept": "application/vnd.travis-ci.2+json"
-}
 
 @CommandHandler("Fetch a build log from Travis", "fetch build log")
 @Tags("travis")
@@ -36,34 +33,10 @@ export class BuildLog implements HandleCommand {
         const buildNumber = this.buildNumber;
         const githubToken = this.githubToken;
 
-        /*POST /auth/github HTTP/1.1
-User-Agent: MyClient/1.0.0
-Accept: application/vnd.travis-ci.2+json
-Host: api.travis-ci.org
-Content-Type: application/json
-Content-Length: 37
-
-{"github_token":"YOUR GITHUB TOKEN"} */
         const auth: Promise<TravisAuth | FailureReport> =
-            axios.post(`${travisApiEndpoint}/auth/github`,
-                { "github_token": githubToken },
-                {
-                    headers: {
-                        ...commonTravisHeaders,
-                        "Content-Type": "application/json"
-                    }
-                }).then(response => {
-                    console.log("Received: " + JSON.stringify(response.data))
-                    return response.data as TravisAuth
-                }).catch(e => {
-                    logger.error("Failure authenticating with Travis: " + e)
-                    return {
-                        circumstance: "Failure authenticating with Travis: ",
-                        error: e
-                    }
-                })
+            authorizeWithGithubToken(travisApiEndpoint, githubToken);
 
-        const buildInfo = auth.then(a => {
+        const buildInfo: Promise<TravisBuilds | FailureReport> = auth.then(a => {
             if (isFailureReport(a)) { return a } else {
                 const url = `${travisApiEndpoint}/repos/${orgRepo}/builds?number=${buildNumber}`
                 return axios.get(url,
@@ -73,34 +46,82 @@ Content-Length: 37
                             "Authorization": `token ${a.access_token}`
                         }
                     }).then(response => {
-                        console.log("Received: " + JSON.stringify(response.data))
-                        return response.data
+                        const data = response.data as TravisBuilds;
+                        if (data.builds.length === 0) {
+                            return {
+                                circumstance: "Fetched build with: " + url,
+                                error: "There are no builds returned",
+                            }
+                        }
+                        console.log("Received: " + JSON.stringify(response.data));
+                        return data;
                     }).catch(e => {
-                        logger.error("Failure retrieving build: " + e)
+                        logger.error("Failure retrieving repo: " + e)
                         return {
-                            circumstance: "Failure getting: " + url,
+                            circumstance: "getting: " + url,
                             error: e
                         }
                     })
             }
         });
 
-        return buildInfo.then(data => {
-            ctx.messageClient.respond(JSON.stringify(data, null, 2);
-            return { code: 0 };
+        const logText: Promise<string | FailureReport> = buildInfo.then(b => {
+            if (isFailureReport(b)) { return b } else {
+                const jobIds = b.builds[0].job_ids
+                console.log("Job IDs: " + JSON.stringify(jobIds));
+                if (!jobIds || jobIds.length === 0) {
+                    return {
+                        circumstance: `getting job IDs out of build ${b.builds[0].id} info: ${jobIds}`,
+                        error: "no Job ID",
+                    }
+                }
+                const jobId = jobIds[0]; // can there be more than one? what does it mean if there is?
+                const url = `${travisApiEndpoint}/jobs/${jobId}/log`
+                // what happens if this is not available yet? I do not know. Then would we have a log ID in the job info?
+                // because we don't have that, in this old build.
+                return axios.get(url,
+                    {
+                        headers: {
+                            ...commonTravisHeaders,
+                            "Accept": "text/plain"
+                        }
+                    }).then(response => {
+                        const data = response.data as string;
+                        console.log("Received: " + JSON.stringify(response.data));
+                        return data;
+                    }).catch(e => {
+                        logger.error("Failure retrieving build: " + e)
+                        return {
+                            circumstance: "getting: " + url,
+                            error: e
+                        }
+                    })
+            }
+        })
+
+        return logText.then(c => {
+            if (isFailureReport(c)) {
+                ctx.messageClient.respond(`I couldn't retrieve the build logs. When I tried to ${c.circumstance}, I got an error: ${c.error}`)
+                return { code: 1 };
+            } else {
+                ctx.messageClient.respond(c);
+                return { code: 0 };
+            }
         })
 
     }
 }
 
-interface TravisAuth {
-    access_token: string
+interface TravisBuilds {
+    builds: {
+        id: number,
+        job_ids: number[],
+        state: string,
+    }[],
+    commits: {
+        id: number,
+        sha: string,
+        branch: string,
+    }[]
 }
 
-function isFailureReport(z: any): z is FailureReport {
-    return z["circumstance"] !== undefined && z["error"] !== undefined
-}
-interface FailureReport {
-    circumstance: string,
-    error: any
-}
