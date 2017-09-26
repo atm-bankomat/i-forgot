@@ -22,6 +22,7 @@ import axios from "axios";
 
 import * as slack from "@atomist/slack-messages/SlackMessages";
 import { analyzeLog } from "./travis/grammar";
+import * as _ from "lodash";
 
 const byStatus = `subscription FailedBuildLog {
   Status {
@@ -133,12 +134,7 @@ export class FailedBuildLog implements HandleEvent<any> {
                     attachments: [logAttachment]
                 }
 
-                const channel = statusData.commit &&
-                    statusData.commit.repo &&
-                    statusData.commit.repo.links &&
-                    (statusData.repo.links.length > 1) &&
-                    statusData.repo.links[0].channel &&
-                    statusData.repo.links[0].channel.name;
+                const channel: string = _.get(statusData, "commit.repo.links[0].channel.name");
 
                 if (channel) {
                     ctx.messageClient.addressChannels(slackMessage,

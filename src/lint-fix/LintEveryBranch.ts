@@ -29,6 +29,18 @@ interface ExecResult {
         spawnargs: string[],
     }
 }
+function fillInExecResult(command: string, e: any): ExecResult {
+    return {
+        stdout: "",
+        stderr: "",
+        ...e,
+        childProcess: {
+            exitCode: e.code,
+            spawnargs: [command],
+            ...e.childProcess
+        }
+    }
+}
 
 interface HasGitProject {
     gitProject: GitProject
@@ -46,7 +58,7 @@ interface HasLintStatus {
     stubbornLintErrors?: string
 }
 
-function executeInProject<T extends object>(project: Promise<T & HasGitProject | Passthrough>, command: String):
+function executeInProject<T extends object>(project: Promise<T & HasGitProject | Passthrough>, command: string):
     Promise<(T & HasGitProject & HasExecResult) | Passthrough> {
     return project.then(p => {
         if (isPassthrough(p)) { return p } else {
@@ -56,18 +68,7 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
                     console.log("Here is the error I get: " + JSON.stringify(e));
                     // nonzero exit codes can come here
                     if (e.name === "ChildProcessError" && e.code) {
-                        /* be completely sure these fields are filled */
-                        const r: ExecResult = {
-                            stdout: "",
-                            stderr: "",
-                            ...e,
-                            childProcess: {
-                                exitCode: e.code,
-                                spawnargs: [command],
-                                ...e.childProcess
-                            }
-                        }
-                        return { ...(p as object), execResult: r }
+                        return { ...(p as object), execResult: fillInExecResult(command, e) }
                     } else {
                         return { circumstance: command, error: e }
                     }
@@ -80,7 +81,7 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
                         return { circumstance: command, error: "WTF why is the child process undefined" }
                     }
                     if (isPassthrough(r)) { return r } else {
-                        return ({ ...(p as object), execResult: r })
+                        return ({ ...(p as object), execResult: fillInExecResult(command, r) })
                     }
                 });
         }
