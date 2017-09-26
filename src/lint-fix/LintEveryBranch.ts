@@ -121,10 +121,7 @@ export class LintEveryBranch implements HandleEvent<graphql.PushToTsLinting.Subs
 
         const cloneProject: Promise<GitProject | FailureReport> =
             GitCommandGitProject.cloned(githubToken, repoOwner, repoName, branch).
-                catch(e => ({
-                    circumstance: `Cloning project ${repoOwner}/${repoName}`,
-                    error: e
-                }));
+                catch(e => ({ circumstance: `Cloning project ${repoOwner}/${repoName}`, error: e }));
 
         const shouldWeLint: Promise<HasGitProject | Passthrough> = cloneProject.then(project => {
             if (isPassthrough(project)) { return project } else {
