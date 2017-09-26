@@ -69,8 +69,8 @@ function isPassthrough(t: any): t is Passthrough {
 }
 
 @EventHandler("Runs ts tslint --fix on a given repository",
-    GraphQL.subscriptionFromFile("graphql/pushToTsLinting"))
-export class PushToTsLinting implements HandleEvent<graphql.PushToTsLinting.Subscription> {
+    GraphQL.subscriptionFromFile("graphql/pushForLinting"))
+export class LintEveryBranch implements HandleEvent<graphql.PushToTsLinting.Subscription> {
 
     @Secret(Secrets.ORG_TOKEN)
     public githubToken: string;

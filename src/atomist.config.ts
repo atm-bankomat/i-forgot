@@ -8,6 +8,7 @@ import { CloseIssue } from "./action-board/Complete";
 import { BuildLog } from "./lint-fix/BuildLog";
 import { FailedBuildLog, DistillBuildLog } from "./lint-fix/DistillFailedBuild";
 import { BuildOnTravis } from "./lint-fix/BuildOnTravis";
+import { LintEveryBranch } from "./lint-fix/LintEveryBranch";
 
 const pj = require("../../package.json");
 
@@ -31,7 +32,8 @@ export const configuration: Configuration = {
     ],
     events: [
         //  () => new UpdateActionBoardsOnIssue(),
-        () => new FailedBuildLog()
+        () => new FailedBuildLog(),
+        () => new LintEveryBranch(),
     ],
     token,
     http: {
