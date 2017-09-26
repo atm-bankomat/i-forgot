@@ -228,7 +228,6 @@ export function doWazzup(ctx: HandlerContext,
                     fallback: "an error from GitHub",
                 }
             }
-            console.log((`****_________TRON: your failed token was ${githubToken}`))
             return ctx.messageClient.addressUsers(`Error doing ${apiSearch}: ${error}`, admin).
                 then(z => Promise.resolve({ summary, activities: [] }))
 

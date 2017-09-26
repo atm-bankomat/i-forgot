@@ -178,7 +178,6 @@ function getLogSummary(travisApiEndpoint: string, githubToken: string,
                             error: "There was no build returned",
                         }
                     }
-                    console.log("Received: " + JSON.stringify(data));
                     return data;
                 }).catch(e => {
                     logger.error("Failure retrieving build: " + e)

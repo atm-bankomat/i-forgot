@@ -26,7 +26,6 @@ export class HelloWorld implements HandleCommand {
         return ctx.graphClient.executeFile<PersonQuery, PersonQueryVariables>("person",
             { teamId: ctx.teamId, slackUser: this.slackUser })
             .then(result => {
-                console.log(JSON.stringify(result));
                 return result.ChatTeam[0].members[0].person;
             })
             .then(person => {

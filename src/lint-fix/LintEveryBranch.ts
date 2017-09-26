@@ -114,6 +114,11 @@ export class LintEveryBranch implements HandleEvent<graphql.PushToTsLinting.Subs
         const commitMessage = `Autofix some linting errors\n\n[atomist:auto - delint]`
         const githubHtmlUrl = "https://github.com"
 
+        if (push.after.message.indexOf("atomist:auto") >= 0) {
+            console.log("Not running LintEveryBranch on my own commit");
+            return Promise.resolve(Success)
+        }
+
         const cloneProject: Promise<GitProject | FailureReport> =
             GitCommandGitProject.cloned(githubToken, repoOwner, repoName, branch).
                 catch(e => ({

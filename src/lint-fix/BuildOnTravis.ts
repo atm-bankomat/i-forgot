@@ -59,7 +59,6 @@ export class BuildOnTravis implements HandleCommand {
                                     error: "No repo was returned. Maybe it's time to add sync handling",
                                 }
                             }
-                            console.log("Received: " + JSON.stringify(response.data));
                             return { ...data, ...a };
                         }).catch(e => {
                             logger.error("Failure retrieving build: " + e)
@@ -83,7 +82,6 @@ export class BuildOnTravis implements HandleCommand {
                             "Authorization": `token ${r.access_token}`
                         }
                     }).then(response => {
-                        console.log("Received: " + JSON.stringify(response.data));
                         return {}; // do we get anything useful?
                     }).catch(e => {
                         logger.error("Failure retrieving build: " + e)

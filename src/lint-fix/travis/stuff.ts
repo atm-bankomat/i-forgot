@@ -57,7 +57,6 @@ export function logFromJobId(travisApiEndpoint: string,
                     }
                 }).then(response => {
                     const data = response.data as string;
-                    console.log("Received: " + JSON.stringify(response.data));
                     return data;
                 }).catch(e => {
                     logger.error("Failure retrieving log: " + e)
@@ -110,7 +109,6 @@ export function jobIdForBuild(travisApiEndpoint: string,
                             error: "There are no builds returned",
                         }
                     }
-                    console.log("Received: " + JSON.stringify(response.data));
                     return data;
                 }).catch(e => {
                     logger.error("Failure retrieving repo: " + e)
