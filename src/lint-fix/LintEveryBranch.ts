@@ -54,6 +54,9 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
             return exec(command, { cwd: p.gitProject.baseDir }).
                 catch(e => ({ circumstance: command, error: e })).
                 then(r => {
+                    if (r === undefined) {
+                        return { circumstance: command, error: "WTF why is the result undefined" }
+                    }
                     if (isPassthrough(r)) { return r } else {
                         return ({ ...(p as object), execResult: r })
                     }
