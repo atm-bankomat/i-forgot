@@ -71,7 +71,7 @@ export class VersionSpreadReviewer extends ReviewerCommandSupport<LibraryCheckRe
             .map(r => r.version)
             .filter(v => !!v);
         const lrr = reviewResult as LibraryCheckReviewResult;
-        lrr.versions = _.uniq(allVersions);
+        lrr.versions = _.uniq(allVersions).sort();
         return lrr;
     }
 
