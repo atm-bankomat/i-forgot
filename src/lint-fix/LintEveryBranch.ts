@@ -143,7 +143,7 @@ export class LintEveryBranch implements HandleEvent<graphql.PushToTsLinting.Subs
         const tsLint: Promise<HasGitProject | Passthrough> = executeInProject(npmInstall,
             "tslint '**/*.ts' --exclude 'node_modules/**' --exclude 'build/**' -t verbose").
             then(output => {
-                if (isNevermind(output)) { return output } else {
+                if (isPassthrough(output)) { return output } else {
                     if (execReturnedSuccess(output)) {
                         return { nevermind: "tslint passed" }
                     } else {
