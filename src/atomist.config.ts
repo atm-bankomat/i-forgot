@@ -1,12 +1,12 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
 
+import { NewAutomation } from "./commands/generator/NewAutomation";
 import { SpringBootVersionReviewer } from "./commands/reviewer/SpringBootVersionReviewer";
+import { VersionSpreadReviewer } from "./commands/reviewer/VersionSpreadReviewer";
 import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
 import { NotifyOnPush } from "./events/NotifyOnPush";
-import { VersionSpreadReviewer } from "./commands/reviewer/VersionSpreadReviewer";
-import { NewAutomation } from "./commands/generator/NewAutomation";
 
 // const pj = require("./package.json");
 
