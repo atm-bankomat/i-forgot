@@ -3,7 +3,7 @@ import { UniversalSeed } from "@atomist/automation-client/operations/generate/Un
 import { Project, ProjectNonBlocking } from "@atomist/automation-client/project/Project";
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 
-import { doWithAtMostOneMatch, doWithUniqueMatch } from "@atomist/automation-client/project/util/parseUtils";
+import { doWithAtMostOneMatch } from "@atomist/automation-client/project/util/parseUtils";
 
 /**
  * Generator command to create a new node automation client repo

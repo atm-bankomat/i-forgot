@@ -1,14 +1,15 @@
 import { CommandHandler, Parameter, Tags } from "@atomist/automation-client/decorators";
 import { hasFile } from "@atomist/automation-client/internal/util/gitHub";
 import { ProjectReviewer } from "@atomist/automation-client/operations/review/projectReviewer";
-import { ReviewerSupport } from "@atomist/automation-client/operations/review/ReviewerSupport";
-import { clean, ProjectReview } from "@atomist/automation-client/operations/review/ReviewResult";
+import { ReviewerCommandSupport } from "@atomist/automation-client/operations/review/ReviewerCommandSupport";
+import { clean, ProjectReview, ReviewResult } from "@atomist/automation-client/operations/review/ReviewResult";
 import { findMatches } from "@atomist/automation-client/project/util/parseUtils";
 import { ParentStanzaGrammar } from "../../grammars/mavenGrammars";
 
 @CommandHandler("Reviewer that flags old versions of Spring Boot", "review spring boot version")
 @Tags("atomist", "spring")
-export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
+export class SpringBootVersionReviewer
+    extends ReviewerCommandSupport<ReviewResult<SpringBootProjectReview>, SpringBootProjectReview> {
 
     @Parameter({
         displayName: "Desired Spring Boot version",
@@ -38,7 +39,7 @@ export class SpringBootVersionReviewer extends ReviewerSupport<ProjectReview> {
                                 repoId: id,
                                 comments: [
                                     {
-                                        severity: "info",
+                                        severity: "warn",
                                         comment: `Old version of Spring Boot: [${version}] - ` +
                                                 `should have been [${this.desiredBootVersion}]`,
                                     },
