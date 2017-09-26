@@ -52,7 +52,7 @@ const byStatus = `subscription FailedBuildLog {
     }
   }
 }
-// `
+`
 // const subscription = `
 // subscription PushWithRepo {
 //   Build(provider: "travis") {
