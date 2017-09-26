@@ -52,7 +52,26 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
         if (isPassthrough(p)) { return p } else {
             console.log("Running command: " + command);
             return exec(command, { cwd: p.gitProject.baseDir }).
-                catch(e => ({ circumstance: command, error: e })).
+                catch(e => {
+                    console.log("Here is the error I get: " + JSON.stringify(e));
+                    // nonzero exit codes can come here
+                    if (e.name === "ChildProcessError" && e.code) {
+                        /* be completely sure these fields are filled */
+                        const r: ExecResult = {
+                            stdout: "",
+                            stderr: "",
+                            ...e,
+                            childProcess: {
+                                exitCode: e.code,
+                                spawnargs: [command],
+                                ...e.childProcess
+                            }
+                        }
+                        return { ...(p as object), execResult: r }
+                    } else {
+                        return { circumstance: command, error: e }
+                    }
+                }).
                 then(r => {
                     if (r === undefined) {
                         return { circumstance: command, error: "WTF why is the result undefined" }
@@ -122,9 +141,9 @@ export class LintEveryBranch implements HandleEvent<graphql.PushToTsLinting.Subs
             });
 
         const tsLint: Promise<HasGitProject | Passthrough> = executeInProject(npmInstall,
-            "tslint '**/*.ts' --exclude 'node_modules/**' --exclude 'build/**' - t verbose").
+            "tslint '**/*.ts' --exclude 'node_modules/**' --exclude 'build/**' -t verbose").
             then(output => {
-                if (isPassthrough(output)) { return output } else {
+                if (isNevermind(output)) { return output } else {
                     if (execReturnedSuccess(output)) {
                         return { nevermind: "tslint passed" }
                     } else {
