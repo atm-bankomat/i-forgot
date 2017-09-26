@@ -4,7 +4,7 @@ import {
     HandleEvent,
     HandlerContext,
     HandlerResult,
-    Success
+    Success,
 } from "@atomist/automation-client/Handlers";
 
 @Ingestor("A simple ingestor that accepts Hello payloads", "hello")
