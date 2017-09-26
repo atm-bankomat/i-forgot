@@ -76,12 +76,6 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
                     }
                 }).
                 then(r => {
-                    if (r === undefined) {
-                        return { circumstance: command, error: "WTF why is the result undefined" }
-                    }
-                    if (r.childProcess === undefined) {
-                        return { circumstance: command, error: "WTF why is the child process undefined" }
-                    }
                     if (isPassthrough(r)) { return r } else {
                         return ({ ...(p as object), execResult: fillInExecResult(command, r) })
                     }
