@@ -7,6 +7,7 @@ export const inProgressLabelName = "in-progress";
 
 const reposLinkedToThisChannel = `query ($teamId: ID!, $channelId: ID!) {
   ChatTeam(id: $teamId) {
+      id
     channels(id: $channelId) {
       links {
         repo {
@@ -30,6 +31,10 @@ export function findLinkedRepositories(
         { teamId: ctx.teamId, channelId: channelId })
         .then(result => {
             // logger.info("repos linked to query result: " + JSON.stringify(result, null, 2));
+            if (!result.ChatTeam[0].channels[0]) {
+                logger.error(`WTF how do we have no channels in ${result.ChatTeam[0].id}`)
+                return [];
+            }
             return result.ChatTeam[0].channels[0].links.map(link => link.repo as Repository);
         }).catch(error => {
             logger.error(`failure running query ${reposLinkedToThisChannel}: ${error}`)

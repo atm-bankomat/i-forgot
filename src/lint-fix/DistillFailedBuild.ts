@@ -23,7 +23,7 @@ import axios from "axios";
 import * as slack from "@atomist/slack-messages/SlackMessages";
 import { analyzeLog } from "./travis/grammar";
 
-const byStatus = `subscription FailedBuildByStatus {
+const byStatus = `subscription FailedBuildLog {
   Status {
       _id
     targetUrl
@@ -83,7 +83,7 @@ subscription PushWithRepo {
 @Tags("travis")
 export class FailedBuildLog implements HandleEvent<any> {
 
-    @Secret(Secrets.USER_TOKEN)
+    @Secret(Secrets.ORG_TOKEN)
     public githubToken: string;
 
     public handle(e: EventFired<any>, ctx: HandlerContext): Promise<any> {

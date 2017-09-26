@@ -24,9 +24,7 @@ export class BuildLog implements HandleCommand {
     @Secret(Secrets.USER_TOKEN)
     public githubToken: string;
 
-
     public handle(ctx: HandlerContext): Promise<HandlerResult> {
-        logger.info(`Trying to fetch build logs for `);
 
         const orgRepo = "atomist/microgrammar";
         const travisApiEndpoint = publicTravisEndpoint;

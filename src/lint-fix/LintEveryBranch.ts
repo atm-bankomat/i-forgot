@@ -76,6 +76,9 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
                     if (r === undefined) {
                         return { circumstance: command, error: "WTF why is the result undefined" }
                     }
+                    if (r.childProcess === undefined) {
+                        return { circumstance: command, error: "WTF why is the child process undefined" }
+                    }
                     if (isPassthrough(r)) { return r } else {
                         return ({ ...(p as object), execResult: r })
                     }
@@ -92,6 +95,9 @@ function isNevermind(t: any): t is Nevermind {
 
 type Passthrough = Nevermind | FailureReport
 function isPassthrough(t: any): t is Passthrough {
+    if (t === null || t == undefined) {
+        throw new Error("wtf is this doing being undefined")
+    }
     return isNevermind(t) || isFailureReport(t)
 }
 

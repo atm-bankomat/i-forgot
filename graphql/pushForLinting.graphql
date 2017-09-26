@@ -1,4 +1,4 @@
-subscription PushToTsLinting
+subscription LintEveryBranch
 {
   Push {
     after {
