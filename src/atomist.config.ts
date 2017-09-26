@@ -5,6 +5,8 @@ import { SpringBootVersionReviewer } from "./commands/reviewer/SpringBootVersion
 import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
 import { NotifyOnPush } from "./events/NotifyOnPush";
+import { VersionSpreadReviewer } from "./commands/reviewer/VersionSpreadReviewer";
+import { NewAutomation } from "./commands/generator/NewAutomation";
 
 // const pj = require("./package.json");
 
@@ -17,6 +19,8 @@ export const configuration: Configuration = {
     commands: [
         () => new HelloWorld(),
         () => new SpringBootVersionReviewer(),
+        () => new VersionSpreadReviewer(),
+        () => new NewAutomation(),
     ],
     events: [
         () => new CommentOnIssue(),
