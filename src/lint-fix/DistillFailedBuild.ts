@@ -95,8 +95,11 @@ export class FailedBuildLog implements HandleEvent<any> {
 
         ctx.messageClient.addressUsers(`Got a status with id ${statusData._id}`, "jessitron");
 
-        if (statusData.context === "continuous-integration/travis-ci/push" &&
-            statusData.state === "failure") {
+        if (statusData.context !== "continuous-integration/travis-ci/push" ||
+            statusData.state !== "failure") {
+            console.log(`this status event is not a failed Travis push build: ${JSON.stringify(statusData)}`);
+            return Promise.resolve({ code: 0 })
+        } else {
             const author: { screenName: string } | string = // string means error
                 !statusData.commit ? "No commit on status" :
                     !statusData.commit.author ? "No author on commit" :
@@ -117,7 +120,7 @@ export class FailedBuildLog implements HandleEvent<any> {
                         }
                     });
 
-            logFuture.then(log => {
+            return logFuture.then(log => {
 
                 const text =
                     `I saw a failed build: ${statusData.targetUrl} with context ${statusData.context}`;
@@ -153,10 +156,6 @@ export class FailedBuildLog implements HandleEvent<any> {
 
                 return Promise.resolve({ code: 0 });
             });
-
-        } else {
-            console.log(`this status event is not a failed Travis build: ${JSON.stringify(statusData)}`);
-            return Promise.resolve({ code: 0 })
         }
     }
 }

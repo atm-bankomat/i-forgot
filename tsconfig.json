@@ -28,6 +28,7 @@
         "node_modules"
     ],
     "compileOnSave": true,
+    "strictNullChecks": true,
     "buildOnSave": false,
     "atom": {
         "rewriteTsconfig": false
