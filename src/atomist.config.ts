@@ -6,6 +6,7 @@ import { SpringBootVersionReviewer } from "./commands/reviewer/SpringBootVersion
 import { VersionSpreadReviewer } from "./commands/reviewer/VersionSpreadReviewer";
 import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
+import { HelloIngestor } from "./events/HelloIngestor";
 import { NotifyOnPush } from "./events/NotifyOnPush";
 
 // const pj = require("./package.json");
@@ -25,6 +26,9 @@ export const configuration: Configuration = {
     events: [
         () => new CommentOnIssue(),
         () => new NotifyOnPush(),
+    ],
+    ingestors: [
+        () => new HelloIngestor(),
     ],
     token,
     http: {
