@@ -52,32 +52,32 @@ const byStatus = `subscription FailedBuildLog {
     }
   }
 }
-`
-const subscription = `
-subscription PushWithRepo {
-  Build(provider: "travis") {
-    buildUrl
-    status
-    name
-    provider
-    commit {
-      sha
-      author {
-        login
-        person {
-            chatId {
-                screenName
-            }
-        }
-      }
-    }
-    repo {
-      name
-      owner
-    }
-  }
-}
-`
+// `
+// const subscription = `
+// subscription PushWithRepo {
+//   Build(provider: "travis") {
+//     buildUrl
+//     status
+//     name
+//     provider
+//     commit {
+//       sha
+//       author {
+//         login
+//         person {
+//             chatId {
+//                 screenName
+//             }
+//         }
+//       }
+//     }
+//     repo {
+//       name
+//       owner
+//     }
+//   }
+// }
+// `
 
 @EventHandler("Provide the end of the log on failed build",
     byStatus)
@@ -111,8 +111,9 @@ export class FailedBuildLog implements HandleEvent<any> {
                                     { screenName: statusData.commit.author.person.chatId.screenName };
 
 
+            const buildUrl = statusData.targetUrl.replace(new RegExp(`^https://.*/(.*/.*/builds/[0-9]*).*$`), travisApiEndpoint + "/repos/$1")
             const logFuture: Promise<string> =
-                getLogSummary(travisApiEndpoint, githubToken, statusData.targetUrl).
+                getLogSummary(travisApiEndpoint, githubToken, buildUrl).
                     then(log => {
                         if (isFailureReport(log)) {
                             return `Failed to retrieve log. While ${log.circumstance}, ${log.error}`;

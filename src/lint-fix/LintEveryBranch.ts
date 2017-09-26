@@ -30,14 +30,16 @@ interface ExecResult {
     }
 }
 function fillInExecResult(command: string, e: any): ExecResult {
+    const stuff = e || {}
+    const exitCode = (stuff.childProcess && stuff.childProcess.exitCode) || (stuff.code) || 0;
     return {
         stdout: "",
         stderr: "",
-        ...e,
+        ...stuff,
         childProcess: {
-            exitCode: e.code,
+            exitCode: exitCode,
             spawnargs: [command],
-            ...e.childProcess
+            ...stuff.childProcess,
         }
     }
 }
