@@ -53,14 +53,10 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
             return exec(command, { cwd: p.gitProject.baseDir }).
                 catch(e => ({ circumstance: command, error: e })).
                 then(r => {
-                    if (!r.childProcess) {
-                        return {
-                            circumstance: `Ran ${command}`,
-                            error: `No childProcess in ${JSON.stringify(r)}`
-                        }
+                    if (isPassthrough(r)) { return r } else {
+                        return ({ ...(p as object), execResult: r })
                     }
-                    return ({ ...(p as object), execResult: r })
-                })
+                });
         }
     })
 
