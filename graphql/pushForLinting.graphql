@@ -1,0 +1,22 @@
+subscription PushToTsLinting
+{
+  Push {
+    after {
+      sha
+      message
+      author {
+        person {
+          chatId {
+            screenName
+          }
+        }
+      }
+    }
+    branch
+    repo {
+      name
+      owner
+    }
+  }
+}
+
