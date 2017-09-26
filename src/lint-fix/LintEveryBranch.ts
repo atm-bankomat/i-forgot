@@ -50,6 +50,7 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
     Promise<(T & HasGitProject & HasExecResult) | Passthrough> {
     return project.then(p => {
         if (isPassthrough(p)) { return p } else {
+            console.log("Running command: " + command);
             return exec(command, { cwd: p.gitProject.baseDir }).
                 catch(e => ({ circumstance: command, error: e })).
                 then(r => {
