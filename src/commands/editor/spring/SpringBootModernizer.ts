@@ -53,6 +53,10 @@ export class SpringBootModernizer extends LocalOrRemoteRepoOperation implements 
                                             return undefined;
                                         }
                                     });
+                            })
+                            .catch(err => {
+                                logger.warn("Error loading repo %s:%s - continuing...", id.owner, id.repo);
+                                return Promise.resolve(undefined);
                             }),
                     );
                 return Promise.all(projectPromises)
