@@ -7,8 +7,8 @@ import * as assert from "power-assert";
 import {
     SpringBootProjectReview,
     SpringBootVersionReviewer,
-} from "../../../src/commands/reviewer/SpringBootVersionReviewer";
-import { NonSpringPom, springBootPom } from "./Poms";
+} from "../../../../src/commands/reviewer/spring/SpringBootVersionReviewer";
+import { NonSpringPom, springBootPom } from "../Poms";
 
 describe("SpringBootVersionReviewer", () => {
 

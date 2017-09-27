@@ -4,7 +4,8 @@ import { ProjectReviewer } from "@atomist/automation-client/operations/review/pr
 import { ReviewerCommandSupport } from "@atomist/automation-client/operations/review/ReviewerCommandSupport";
 import { clean, ProjectReview, ReviewResult } from "@atomist/automation-client/operations/review/ReviewResult";
 import { findMatches } from "@atomist/automation-client/project/util/parseUtils";
-import { ParentStanzaGrammar } from "../../grammars/mavenGrammars";
+import { ParentStanzaGrammar } from "../../../grammars/mavenGrammars";
+import { SpringBootStarter } from "../../editor/spring/springConstants";
 
 @CommandHandler("Reviewer that flags old versions of Spring Boot", "review spring boot version")
 @Tags("atomist", "spring")
@@ -31,7 +32,7 @@ export class SpringBootVersionReviewer
         return (id, p, context) => {
             return findMatches(p, "pom.xml", ParentStanzaGrammar)
                 .then(matches => {
-                    if (matches.length > 0 && matches[0].gav.artifact === "spring-boot-starter-parent") {
+                    if (matches.length > 0 && matches[0].gav.artifact === SpringBootStarter) {
                         const version = matches[0].gav.version;
                         const outDated = version !== this.desiredBootVersion;
                         if (outDated) {

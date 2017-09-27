@@ -8,7 +8,6 @@ import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemory
 import { Project } from "@atomist/automation-client/project/Project";
 import * as assert from "power-assert";
 import { VersionSpreadReviewer } from "../../../src/commands/reviewer/VersionSpreadReviewer";
-import { dependencyOfGrammar } from "../../../src/grammars/mavenGrammars";
 import { NonSpringPom, springBootPom } from "./Poms";
 
 class TestVersionSpreadReviewer extends VersionSpreadReviewer {
@@ -90,20 +89,4 @@ describe("VersionSpreadReviewer", () => {
         }).catch(done);
     });
 
-});
-
-describe("dependency grammar", () => {
-
-    it("finds no match", () => {
-        const matches = dependencyOfGrammar("xxxcommons-io", "xxxcommons-io")
-            .findMatches(springBootPom("1.3.1"));
-        assert(matches.length === 0);
-    });
-
-    it("finds a match", () => {
-        const matches = dependencyOfGrammar("commons-io", "commons-io")
-            .findMatches(springBootPom("1.3.1"));
-        assert(matches.length === 1);
-        assert(matches[0].gav.version === "2.5");
-    });
 });

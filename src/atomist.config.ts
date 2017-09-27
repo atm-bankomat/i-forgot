@@ -1,8 +1,10 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
 
+import { SpringBootModernizer } from "./commands/editor/spring/SpringBootModernizer";
+import { SpringBootVersionUpgrade } from "./commands/editor/spring/SpringBootVersionUpgrade";
 import { NewAutomation } from "./commands/generator/NewAutomation";
-import { SpringBootVersionReviewer } from "./commands/reviewer/SpringBootVersionReviewer";
+import { SpringBootVersionReviewer } from "./commands/reviewer/spring/SpringBootVersionReviewer";
 import { VersionSpreadReviewer } from "./commands/reviewer/VersionSpreadReviewer";
 import { HelloWorld } from "./commands/simple/HelloWorld";
 import { CommentOnIssue } from "./events/CommentOnIssue";
@@ -22,6 +24,8 @@ export const configuration: Configuration = {
         () => new SpringBootVersionReviewer(),
         () => new VersionSpreadReviewer(),
         () => new NewAutomation(),
+        () => new SpringBootModernizer(),
+        () => new SpringBootVersionUpgrade(),
     ],
     events: [
         () => new CommentOnIssue(),
