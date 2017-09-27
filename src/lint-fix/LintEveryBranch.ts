@@ -32,6 +32,7 @@ interface ExecResult {
 function fillInExecResult(command: string, e: any): ExecResult {
     const stuff = e || {}
     const exitCode = (stuff.childProcess && stuff.childProcess.exitCode) || (stuff.code) || 0;
+    console.log("Perceived exit code is " + exitCode)
     return {
         stdout: "",
         stderr: "",
@@ -67,7 +68,7 @@ function executeInProject<T extends object>(project: Promise<T & HasGitProject |
             console.log("Running command: " + command);
             return exec(command, { cwd: p.gitProject.baseDir }).
                 catch(e => {
-                    console.log("Here is the error I get: " + JSON.stringify(e));
+                    //console.log("Here is the error I get: " + JSON.stringify(e));
                     // nonzero exit codes can come here
                     if (e.name === "ChildProcessError" && e.code) {
                         return { ...(p as object), execResult: fillInExecResult(command, e) }
