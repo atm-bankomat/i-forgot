@@ -79,10 +79,14 @@ export class SpringBootModernizer extends LocalOrRemoteRepoOperation implements 
     protected doEdit(context: HandlerContext, p: ProjectMatch, editor: ProjectEditor<any>, desiredVersion: string) {
         return editProjectUsingBranch(context, p.id, p.project, editor,
             {
-                branch: `atomist-spring-boot-${desiredVersion}`,
+                branch: `atm-spring-boot-${desiredVersion}`,
                 commitMessage: `Migrating ${p.id.repo} to Spring Boot ${desiredVersion} from ${p.match.gav.version}`,
             },
-        );
+        )
+            .catch(err => {
+                logger.warn(`Failed to edit branch for %s:%s - %s`, p.id.owner, p.id.repo, err);
+                return err;
+            });
     }
 
     private editAll(context: HandlerContext, springBootProjects: ProjectMatch[], versions: string[]) {

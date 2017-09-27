@@ -22,6 +22,7 @@ export function setSpringBootVersionEditor(desiredBootVersion: string): ProjectE
                 }
             })
             .run()
+            .then(files => p.flush())
             .then(_ => {
                 return {
                     edited,
