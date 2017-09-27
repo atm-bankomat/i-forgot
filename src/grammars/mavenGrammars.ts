@@ -54,10 +54,13 @@ export interface ArtifactContainer {
  * @param {string} containerElementName
  * @return {Microgrammar<ArtifactContainer>}
  */
-function artifactContainerGrammar(containerElementName: string) {
+function artifactContainerGrammar(containerElementName: string, group?: string, artifact?: string) {
     return Microgrammar.fromDefinitions<ArtifactContainer>({
         _start: `<${containerElementName}>`,
         _gav: GavGrammar,
+        // Validation steps if we are searching for a precise artifact
+        _hasDesiredGroup : ctx => !!artifact ? ctx._gav.gav.group === group : true,
+        _hasDesiredArtifact : ctx => !!artifact ? ctx._gav.gav.artifact === artifact : true,
         gav: ctx => ctx._gav.gav,
         // Pull this up so that we can modify it directly.
         // We can't modify through gav property as it's computed by a function in GavGrammar
@@ -65,6 +68,21 @@ function artifactContainerGrammar(containerElementName: string) {
     });
 }
 
-export const ParentStanzaGrammar = artifactContainerGrammar("parent");
+export const ParentStanzaGrammar =
+    artifactContainerGrammar("parent");
+
+export function parentStanzaOfGrammar(artifact: string) {
+    return artifactContainerGrammar("parent", artifact);
+}
 
 export const DependencyGrammar = artifactContainerGrammar("dependency");
+
+/**
+ * Matches dependency of a particular artifact
+ * @param {string} group
+ * @param {string} artifact
+ * @return {Microgrammar<ArtifactContainer>}
+ */
+export function dependencyOfGrammar(group: string, artifact: string) {
+    return artifactContainerGrammar("dependency", group, artifact);
+}

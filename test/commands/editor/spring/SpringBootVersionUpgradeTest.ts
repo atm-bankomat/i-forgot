@@ -4,8 +4,8 @@ import { RepoId, SimpleRepoId } from "@atomist/automation-client/operations/comm
 import { ProjectEditor } from "@atomist/automation-client/operations/edit/projectEditor";
 import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
 import * as assert from "power-assert";
-import { SpringBootVersionUpgrade } from "../../../src/commands/editor/SpringBootVersionUpgrade";
-import { NonSpringPom, springBootPom } from "../reviewer/Poms";
+import { SpringBootVersionUpgrade } from "../../../../src/commands/editor/spring/SpringBootVersionUpgrade";
+import { NonSpringPom, springBootPom } from "../../reviewer/Poms";
 
 describe("SpringBootVersionUpgrade", () => {
 
