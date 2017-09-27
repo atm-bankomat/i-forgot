@@ -6,6 +6,8 @@ import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIs
 import { Unassign } from "./action-board/Unassign";
 import { CloseIssue } from "./action-board/Complete";
 import { BuildLog } from "./lint-fix/BuildLog";
+import { NewAutomation } from "./commands/generator/NewAutomation";
+import { HelloIngestor } from "./events/HelloIngestor";
 
 const pj = require("../../package.json");
 
@@ -16,17 +18,15 @@ export const configuration: Configuration = {
     version: "0.2.3",
     teamId: "T6MFSUPDL",
     commands: [
-        // () => new ActionBoard(),
-        // () => new ActionBoardUpdate(),
-        // () => new CommenceWork(),
-        // () => new PostponeWork(),
-        // () => new Unassign(),
-        // () => new CloseIssue(),
         // build
-        () => new BuildLog()
+        () => new BuildLog(),
+        () => new NewAutomation(),
     ],
     events: [
         //  () => new UpdateActionBoardsOnIssue(),
+    ],
+    ingestors: [
+        () => new HelloIngestor(),
     ],
     token,
     http: {
