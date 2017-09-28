@@ -7,15 +7,22 @@ import {
     HandlerContext,
     HandlerResult,
     Tags,
+    Success,
+    Secrets,
+    Secret,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
-import { FailureReport } from "../lint-fix/travis/stuff";
+import { FailureReport, isFailureReport } from "../lint-fix/travis/stuff";
 import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
+import * as _ from 'lodash';
+import { CommandResult } from '@atomist/automation-client/internal/util/commandLine';
+import { Microgrammar } from '@atomist/microgrammar/Microgrammar';
+import { doWithFileMatches } from '@atomist/automation-client/project/util/parseUtils';
 
 const Query = `
 subscription StartDownstreamTests {
-    Build {
+    Build(trigger: pull_request, status: passed) {
        buildUrl
        name
        provider
@@ -40,18 +47,28 @@ subscription StartDownstreamTests {
 @Tags("travis")
 export class StartDownstreamTests implements HandleEvent<any> {
 
+    @Secret(Secrets.ORG_TOKEN)
+    public githubToken: string;
+
     public handle(e: EventFired<any>, ctx: HandlerContext):
         Promise<HandlerResult> {
 
         const build = e.data.Build[0];
+        const branch = build.branch;
+        const githubToken = this.githubToken;
         const repoSlug = `${build.repo.name}/${build.repo.owner}`;
         const upstreamRepo = "atomist/microgrammar";
-        const downstreamRepo = "atomist/automation-client-samples-ts"
+        const downstreamRepo = { owner: "atomist", name: "automation-client-samples-ts" };
+        const [newDependency, newVersion] = parseCascadeTag(build.pullRequest.mergeCommit.tags)
+        const realPublishedModule = "@atomist/microgrammar";
+        const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo}#${build.pullRequest.number}`
 
-        if (build.trigger === "pull_request" && repoSlug === upstreamRepo) {
+
+        if (repoSlug === slug(downstreamRepo)) {
             console.log(`Time to trigger a downstream build!`)
 
-            updateDependencyOnBranch();
+            updateDependencyOnBranch(githubToken,
+                downstreamRepo, branch, realPublishedModule, newDependency, newVersion);
 
 
         } else {
@@ -76,12 +93,38 @@ function slug(repository: Repository): string {
     return `${repository.name}/${repository.owner}`
 }
 
-function updateDependencyOnBranch(githubToken: string, targetRepo: Repository, branch: string): Promise<void | FailureReport> {
+function updateDependencyOnBranch(githubToken: string,
+    target: PushInstruction,
+    dependencyToReplace: string,
+    newDependency: string, newDependencyVersion: string): Promise<void | FailureReport> {
 
     // clone the target project.
     const cloneProject: Promise<GitProject | FailureReport> =
-        GitCommandGitProject.cloned(githubToken, targetRepo.owner, targetRepo.name, branch).
-            catch(e => ({ circumstance: `Cloning project ${slug(targetRepo)}`, error: e }));
+        GitCommandGitProject.cloned(githubToken, target.repo.owner, target.repo.name, target.branch).
+            catch(e => ({ circumstance: `Cloning project ${slug(target.repo)}`, error: e }));
+
+    const editProject: Promise<GitProject | FailureReport> = cloneProject.then(project => {
+        if (isFailureReport(project)) { return project } else {
+            let oldDependency = Microgrammar.fromString(`"$name": "$version"`,
+                {
+                    name: dependencyToReplace,
+                    version: /[0-9^.-]+/
+                }
+            );
+
+            return doWithFileMatches(project, "package.json", oldDependency, f => {
+                let m = f.matches[0] as any;
+                m.name = newDependency;
+                m.version = newDependencyVersion;
+            }).run().then(files => project as GitProject | FailureReport);
+        }
+    }).catch(error => ({ circumstance: "Editing package.json", error }));
+
+    const commitAndPushToProject = editProject.then(project => {
+        if (isFailureReport(project)) { return project } else {
+            commitAndPush(target, project)
+        }
+    }).catch(error => ({ circumstance: "committing and pushing", error }));
 
 
 
@@ -91,30 +134,26 @@ function updateDependencyOnBranch(githubToken: string, targetRepo: Repository, b
 
 interface PushInstruction {
     branch: string,
-    repo: { owner: string, name: string },
-    after: { sha: string }
+    repo: Repository,
+    commitMessage: string,
 }
 
 function commitAndPush(
     push: PushInstruction,
-    project: GitProject,
-    result: CommandResult,
-    baseDir: string,
-    ctx: HandlerContext): Promise<any> {
+    project: GitProject): Promise<any> {
 
-    const exitCode: number = _.get(result, "childProcess.exitCode") || -42;
     return project.clean()
         .then(clean => {
             if (!clean) {
                 return project.createBranch(push.branch)
-                    .then(() => project.commit(`Automatic de-linting\n[atomist:auto-delint]`))
+                    .then(() => project.commit(push.commitMessage))
                     .then(() => project.push());
             } else {
                 return Promise.resolve(Success);
             }
         })
-        .then(() => {
-            return raiseGitHubStatus(push.repo.owner, push.repo.name, push.after.sha,
-                exitCode);
-        });
+}
+
+function parseCascadeTag(tags: string[]): [string, string] {
+    return ["@atomist/microgrammar_cascade", "0.6.3"]; // TODO: implement
 }
