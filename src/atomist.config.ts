@@ -15,6 +15,8 @@ import { NotifyOnPush } from "./events/NotifyOnPush";
 
 const token = process.env.GITHUB_TOKEN;
 
+const host = "https://automation-staging.atomist.services";
+
 export const configuration: Configuration = {
     name: `aws-lambda-test-${guid()}` ,
     version: `0.1.0`,
@@ -45,5 +47,9 @@ export const configuration: Configuration = {
                 enabled: false,
             },
         },
+    },
+    endpoints: {
+        graphql: `${host}/graphql`,
+        api: `${host}/registration`,
     },
 };
