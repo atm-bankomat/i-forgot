@@ -68,7 +68,8 @@ export class StartDownstreamTests implements HandleEvent<any> {
             console.log(`Time to trigger a downstream build!`)
 
             updateDependencyOnBranch(githubToken,
-                downstreamRepo, branch, realPublishedModule, newDependency, newVersion);
+                { repo: downstreamRepo, branch, commitMessage },
+                realPublishedModule, newDependency, newVersion);
 
 
         } else {
