@@ -6,7 +6,7 @@ import { RepoId, SimpleRepoId } from "@atomist/automation-client/operations/comm
 import * as assert from "power-assert";
 import { setSpringBootVersionEditor } from "../../../../src/commands/editor/spring/setSpringBootVersionEditor";
 import { tempProject } from "../../../util/tempProject";
-import { springBootPom } from "../../reviewer/Poms";
+import { springBootPom } from "../../reviewer/maven/Poms";
 
 describe("setSpringBootVersionEditor", () => {
 

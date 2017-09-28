@@ -3,7 +3,7 @@ import "mocha";
 import * as assert from "power-assert";
 
 import { dependencyOfGrammar } from "../../../../src/grammars/mavenGrammars";
-import { springBootPom } from "../Poms";
+import { springBootPom } from "./Poms";
 
 describe("dependency grammar", () => {
 

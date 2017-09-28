@@ -11,7 +11,7 @@ import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemory
 import { Project } from "@atomist/automation-client/project/Project";
 import * as assert from "power-assert";
 import { ProjectMatch, SpringBootModernizer } from "../../../../src/commands/editor/spring/SpringBootModernizer";
-import { NonSpringPom, springBootPom } from "../../reviewer/Poms";
+import { NonSpringPom, springBootPom } from "../../reviewer/maven/Poms";
 
 class TestModernizer extends SpringBootModernizer {
 

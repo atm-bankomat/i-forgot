@@ -5,7 +5,7 @@ import { ProjectEditor } from "@atomist/automation-client/operations/edit/projec
 import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
 import * as assert from "power-assert";
 import { SpringBootVersionUpgrade } from "../../../../src/commands/editor/spring/SpringBootVersionUpgrade";
-import { NonSpringPom, springBootPom } from "../../reviewer/Poms";
+import { NonSpringPom, springBootPom } from "../../reviewer/maven/Poms";
 
 describe("SpringBootVersionUpgrade", () => {
 
