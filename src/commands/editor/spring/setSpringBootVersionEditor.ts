@@ -3,6 +3,7 @@ import { EditResult, ProjectEditor } from "@atomist/automation-client/operations
 import { doWithAtMostOneMatch } from "@atomist/automation-client/project/util/parseUtils";
 import { parentStanzaOfGrammar } from "../../../grammars/mavenGrammars";
 import { SpringBootStarter } from "./springConstants";
+import { assertContentIncludes } from "./invariants";
 
 /**
  * Set the Spring Boot version to
@@ -22,7 +23,11 @@ export function setSpringBootVersionEditor(desiredBootVersion: string): ProjectE
                 }
             })
             .run()
-            .then(files => p.flush())
+            //.then(files => p.flush())
+            .then(files =>
+                 (edited) ?
+                assertContentIncludes(p, "pom.xml", desiredBootVersion) : p
+            )
             .then(_ => {
                 return {
                     edited,

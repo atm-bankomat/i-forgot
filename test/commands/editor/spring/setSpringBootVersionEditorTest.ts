@@ -5,7 +5,7 @@ import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemory
 import { RepoId, SimpleRepoId } from "@atomist/automation-client/operations/common/RepoId";
 import * as assert from "power-assert";
 import { setSpringBootVersionEditor } from "../../../../src/commands/editor/spring/setSpringBootVersionEditor";
-import { springBootPom } from "../Poms";
+import { springBootPom } from "../../reviewer/Poms";
 
 describe("setSpringBootVersionEditor", () => {
 
