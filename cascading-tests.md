@@ -24,7 +24,7 @@ It also tags the commit with a special tag in the format newModuleName-newModule
 
 ### trigger the downstream build
 
-I've started a command handler to do this, in src/cascade/? . It isn't tested.
+I've started a command handler to do this, in https://github.com/atm-osphere/automation-client/blob/travis-work/src/cascading-tests/StartDownstreamTests.ts (branch travis-work, which has turned into my everything-i-would-put-in-a-new-automation-if-that-handler-worked branch). It isn't tested.
 
 It triggers on completion of a PR build in microgrammar.
 
