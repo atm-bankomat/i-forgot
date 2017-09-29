@@ -14,16 +14,22 @@ const pj = require("../../package.json");
 const token = process.env["GITHUB_TOKEN"];
 
 export const configuration: Configuration = {
-    name: "automate-lint-fix",
-    version: "0.2.3",
+    name: "action-board",
+    version: "0.2.4",
     teamId: "T6MFSUPDL",
     commands: [
         // build
-        () => new BuildLog(),
+        // () => new BuildLog(),
+        () => new ActionBoard(),
+        () => new ActionBoardUpdate(),
+        () => new CommenceWork(),
+        () => new PostponeWork(),
+        () => new CloseIssue(),
+        () => new Unassign(),
         () => new NewAutomation(),
     ],
     events: [
-        //  () => new UpdateActionBoardsOnIssue(),
+        () => new UpdateActionBoardsOnIssue(),
     ],
     ingestors: [
         () => new HelloIngestor(),
