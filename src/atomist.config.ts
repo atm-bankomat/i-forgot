@@ -5,7 +5,6 @@ import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./ac
 import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIssue";
 import { Unassign } from "./action-board/Unassign";
 import { CloseIssue } from "./action-board/Complete";
-import { BuildLog } from "./lint-fix/BuildLog";
 import { NewAutomation } from "./commands/generator/NewAutomation";
 import { HelloIngestor } from "./events/HelloIngestor";
 
@@ -18,14 +17,14 @@ export const configuration: Configuration = {
     version: "0.2.4",
     teamId: "T6MFSUPDL",
     commands: [
-        // build
-        // () => new BuildLog(),
+        // action board
         () => new ActionBoard(),
         () => new ActionBoardUpdate(),
         () => new CommenceWork(),
         () => new PostponeWork(),
         () => new CloseIssue(),
         () => new Unassign(),
+        // useful from sample
         () => new NewAutomation(),
     ],
     events: [
