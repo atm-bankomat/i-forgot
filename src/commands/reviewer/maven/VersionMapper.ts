@@ -53,10 +53,18 @@ export class VersionMapper extends LocalOrRemoteRepoOperation implements HandleC
 
 }
 
-function consolidate(arrs: VersionedArtifact[][]): any {
+export function consolidate(arrs: VersionedArtifact[][]): object {
     // Put in the aggregate version information
-    const allArtifacts = _.flatten(arrs);
-    // const distinctArtifacts = _.uniq(arr, a => a.group + ":" + a.artifact + ":" + a.version);
-    const byGroup = _.groupBy(allArtifacts, a => a.group + ":" + a.artifact);
+    const allArtifacts: VersionedArtifact[] = _.flatten(arrs);
+    const distinctArtifacts = _.uniqBy(allArtifacts, a => a.group + ":" + a.artifact + ":" + a.version);
+    const byGroup: _.Dictionary<any[]> = _.groupBy(distinctArtifacts,
+        a => a.group);
+    for (const group of Object.getOwnPropertyNames(byGroup)) {
+        (byGroup[group] as any) = _.groupBy(byGroup[group], a => a.artifact);
+        for (const artifact of Object.getOwnPropertyNames(byGroup[group])) {
+            console.log("artifact=" + artifact);
+            byGroup[group][artifact] = byGroup[group][artifact].map(gav => gav.version);
+        }
+    }
     return byGroup;
 }
