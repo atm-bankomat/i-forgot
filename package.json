@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "This is my first Atomist automation node",
   "dependencies": {
-    "@atomist/automation-client": "^0.1.29",
+    "@atomist/automation-client": "^0.1.30",
     "@atomist/slack-messages": "^0.11.0",
     "@types/winston": "^2.3.5",
     "cfenv": "^1.0.4"

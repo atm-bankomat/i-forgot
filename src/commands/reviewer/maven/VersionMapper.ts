@@ -10,6 +10,7 @@ import { LocalOrRemoteRepoOperation } from "@atomist/automation-client/operation
 import { findMatches } from "@atomist/automation-client/project/util/parseUtils";
 import { ArtifactContainer, DependencyGrammar } from "../../../grammars/mavenGrammars";
 import { VersionedArtifact } from "../../../grammars/VersionedArtifact";
+import { expandProperties } from "./utils";
 
 @CommandHandler("Reviewer that reports the range of versions of all Maven dependencies", "version map")
 @Tags("atomist", "maven", "library")
@@ -31,7 +32,9 @@ export class VersionMapper extends LocalOrRemoteRepoOperation implements HandleC
                     reposToEdit.map(id =>
                         this.repoLoader()(id)
                             .then(project => {
-                                return findMatches<ArtifactContainer>(project, "pom.xml", DependencyGrammar)
+                                return findMatches<ArtifactContainer>(project, "pom.xml",
+                                    DependencyGrammar, {contentTransformer: expandProperties},
+                                )
                                     .then(match => match.map(m => m.gav));
                             })
                             .catch(err => {
