@@ -1,6 +1,4 @@
 import { Configuration } from "@atomist/automation-client/configuration";
-import { guid } from "@atomist/automation-client/internal/util/string";
-
 import { SpringBootModernizer } from "./commands/editor/spring/SpringBootModernizer";
 import { SpringBootVersionUpgrade } from "./commands/editor/spring/SpringBootVersionUpgrade";
 import { NewAutomation } from "./commands/generator/NewAutomation";
@@ -12,16 +10,14 @@ import { CommentOnIssue } from "./events/CommentOnIssue";
 import { HelloIngestor } from "./events/HelloIngestor";
 import { NotifyOnPush } from "./events/NotifyOnPush";
 
-// const pj = require("./package.json");
+const pj = require("../../package.json");
 
 const token = process.env.GITHUB_TOKEN;
 
-const host = "https://automation-staging.atomist.services";
-
 export const configuration: Configuration = {
-    name: `aws-lambda-test-${guid()}` ,
-    version: `0.1.0`,
-    teamId: "T1L0VDKJP",
+    name: pj.name ,
+    version: pj.version,
+    teamId: "T29E48P34", // <-- run @atomist pwd in your slack team to obtain the team id
     commands: [
         () => new HelloWorld(),
         () => new SpringBootVersionReviewer(),
@@ -49,9 +45,5 @@ export const configuration: Configuration = {
                 enabled: false,
             },
         },
-    },
-    endpoints: {
-        graphql: `${host}/graphql/team`,
-        api: `${host}/registration`,
     },
 };
