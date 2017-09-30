@@ -35,3 +35,8 @@ add: make a pending status on the original commit.
 ### react to that build completion
 
 Not started. When that build completes, push a status to the original upstream commit, success or fail.
+
+### clean up
+
+When the upstream PR is closed, unpublish the npm module.
+Submit a PR for the downstream branch!
