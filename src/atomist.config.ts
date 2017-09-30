@@ -1,3 +1,4 @@
+import * as appRoot from "app-root-path";
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
 import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./action-board/ActionBoard";
@@ -8,7 +9,7 @@ import { CloseIssue } from "./action-board/Complete";
 import { NewAutomation } from "./commands/generator/NewAutomation";
 import { HelloIngestor } from "./events/HelloIngestor";
 
-const pj = require("../../package.json");
+const pj = require(`${appRoot}//package.json`);
 
 const token = process.env["GITHUB_TOKEN"];
 

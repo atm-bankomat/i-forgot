@@ -8,7 +8,7 @@ import {
     SpringBootProjectReview,
     SpringBootVersionReviewer,
 } from "../../../../src/commands/reviewer/spring/SpringBootVersionReviewer";
-import { NonSpringPom, springBootPom } from "../Poms";
+import { NonSpringPom, springBootPom } from "../maven/Poms";
 
 describe("SpringBootVersionReviewer", () => {
 

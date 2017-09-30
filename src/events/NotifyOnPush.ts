@@ -8,94 +8,13 @@ import {
     Tags,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
-import { PushWithRepoSubscription } from "../schema";
+import * as graphql from "../typings/types";
 
-const Query = `
-subscription PushWithRepo {
-    Push {
-     builds {
-       buildUrl
-       name
-       provider
-       commit {
-         sha
-       }
-     }
-     before {
-       sha
-     }
-     after {
-       sha
-       statuses {
-         context
-         description
-         targetUrl
-       }
-     }
-     repo {
-       owner
-       name
-       channels {
-         name
-       }
-       labels {
-         name
-       }
-       org {
-         provider {
-           url
-           apiUrl
-           gitUrl
-         }
-       }
-     }
-     commits {
-       sha
-       resolves {
-         number
-         name
-         title
-       }
-       impact {
-         data
-         url
-       }
-       apps {
-         state
-         host
-         domain
-         data
-       }
-       tags {
-         name
-         release {
-           name
-         }
-         containers {
-           pods {
-             host
-             state
-             name
-           }
-         }
-       }
-       author {
-         login
-         person {
-           chatId {
-             screenName
-           }
-         }
-       }
-     }
-    }
-  }`;
-
-@EventHandler("Notify channel on push", Query)
+@EventHandler("Notify channel on push", GraphQL.subscriptionFromFile("graphql/push"))
 @Tags("push", "notification")
-export class NotifyOnPush implements HandleEvent<PushWithRepoSubscription> {
+export class NotifyOnPush implements HandleEvent<graphql.PushWithRepo.Subscription> {
 
-    public handle(e: EventFired<PushWithRepoSubscription>, ctx: HandlerContext): Promise<HandlerResult> {
+    public handle(e: EventFired<graphql.PushWithRepo.Subscription>, ctx: HandlerContext): Promise<HandlerResult> {
         logger.info(`Incoming event is %s`, JSON.stringify(e.data, null, 2));
 
         return Promise.all(e.data.Push.map(p =>
