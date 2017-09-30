@@ -4,7 +4,7 @@
   "repository": "git@github.com:atm-osphere/automation-client.git",
   "description": "This is my first Atomist automation node",
   "dependencies": {
-    "@atomist/automation-client": "^0.1.30",
+    "@atomist/automation-client": "^0.1.31",
     "@atomist/slack-messages": "^0.11.0",
     "@types/winston": "^2.3.5",
     "cfenv": "^1.0.4",
