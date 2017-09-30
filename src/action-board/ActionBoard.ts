@@ -349,10 +349,10 @@ function priority(linkedRepositories: Repository[], issue: GitHubIssueResult): n
 
     // work
     if (repository.owner === "atomisthq" && atWork) {
-        opinion += 4;
+        opinion += 2;
     }
     if (repository.owner === "atomist" && atWork) {
-        opinion += 2;
+        opinion += 4;
     }
 
     // work+personal both
