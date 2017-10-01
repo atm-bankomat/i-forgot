@@ -1,3 +1,4 @@
+import * as appRoot from "app-root-path";
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
 import { ActionBoard, CommenceWork, ActionBoardUpdate, PostponeWork } from "./action-board/ActionBoard";
@@ -12,13 +13,13 @@ import { LintEveryBranch } from "./lint-fix/LintEveryBranch";
 import { NewAutomation } from "./commands/generator/NewAutomation";
 import { HelloIngestor } from "./events/HelloIngestor";
 
-const pj = require("../../package.json");
+const pj = require(`${appRoot}//package.json`);
 
 const token = process.env["GITHUB_TOKEN"];
 
 export const configuration: Configuration = {
-    name: "automate-lint-fix",
-    version: "0.2.3",
+    name: "action-board",
+    version: "0.2.4",
     teamId: "T6MFSUPDL",
     commands: [
         // build

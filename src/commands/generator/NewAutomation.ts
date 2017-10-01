@@ -15,6 +15,10 @@ export class NewAutomation extends UniversalSeed {
     @MappedParameter(MappedParameters.SLACK_TEAM)
     public team: string;
 
+    // necessary to get org token
+    @MappedParameter(MappedParameters.GITHUB_REPO_OWNER)
+    public owner: string;
+
     constructor() {
         super();
         this.sourceRepo = "automation-client-samples-ts";

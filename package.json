@@ -1,10 +1,10 @@
 {
   "name": "@atm-osphere/action-board",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "repository": "git@github.com:atm-osphere/automation-client.git",
   "description": "This is my first Atomist automation node",
   "dependencies": {
-    "@atomist/automation-client": "^0.1.17",
+    "@atomist/automation-client": "^0.1.31",
     "@atomist/slack-messages": "^0.11.0",
     "@atomist/microgrammar": "^0.6.2",
     "@types/winston": "^2.3.5",
@@ -13,21 +13,21 @@
     "fs": "0.0.1-security"
   },
   "devDependencies": {
-    "@types/node": "^8.0.26",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^8.0.31",
+    "@types/power-assert": "^1.4.29",
+    "espower-typescript": "^8.0.2",
+    "graphql-code-generator": "^0.8.13",
+    "mocha": "^3.5.3",
     "nodemon": "^1.12.0",
     "npm-run-all": "^4.1.1",
-    "espower-typescript": "^8.0.2",
-    "mocha": "^3.5.3",
     "power-assert": "^1.4.4",
-    "@types/power-assert": "^1.4.29",
-    "@types/mocha": "^2.2.41",
     "supervisor": "^0.12.0",
     "ts-node": "^3.3.0",
     "tslint": "^5.4.3",
     "typedoc": "^0.8.0",
     "typescript": "2.5.2",
-    "typescript-formatter": "^6.0.0",
-    "graphql-code-generator": "^0.8.13"
+    "typescript-formatter": "^6.0.0"
   },
   "directories": {
     "test": "test"
@@ -36,7 +36,8 @@
     "gql-gen": "gql-gen --file node_modules/@atomist/automation-client/graph/schema.cortex.json --template typescript -m --out ./src/typings/ \"./graphql/**/*.graphql\"",
     "autotest": "supervisor -q -n exit -e ts -x npm -- run test",
     "clean": "rm -f *-v8.log; rm -f profile.txt; rm -rf build; rm -rf target",
-    "compile": "tsc -p .",
+    "gql:gen": "gql-gen --file node_modules/@atomist/automation-client/graph/schema.cortex.json --template typescript -m --out ./src/typings/ \"./graphql/**/*.graphql\"",
+    "compile": "npm run gql:gen && tsc -p .",
     "fmt": "tsfmt --replace",
     "lint": "tslint '**/*.ts' --exclude 'node_modules/**' --exclude 'build/**' -t verbose",
     "lint-fix": "tslint --fix '**/*.ts' --exclude 'node_modules/**' --exclude 'build/**' -t verbose",

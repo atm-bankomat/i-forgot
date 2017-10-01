@@ -1,5 +1,5 @@
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
-import { atLeastOne } from "@atomist/microgrammar/Rep";
+import { atLeastOne, zeroOrMore } from "@atomist/microgrammar/Rep";
 import { VersionedArtifact } from "./VersionedArtifact";
 
 export const ElementName = /^[a-zA-Z_.0-9\-]+/;
@@ -39,7 +39,7 @@ export const GavGrammar = Microgrammar.fromDefinitions<{ gav: VersionedArtifact 
         const artifact = ctx.tags.filter(tag => tag.name === "artifactId")[0].value;
         const versions = ctx.tags.filter(tag => tag.name === "version");
         const version = versions.length === 1 ? versions[0].value : undefined;
-        return { group, artifact, version };
+        return {group, artifact, version};
     },
 });
 
@@ -59,8 +59,8 @@ function artifactContainerGrammar(containerElementName: string, group?: string, 
         _start: `<${containerElementName}>`,
         _gav: GavGrammar,
         // Validation steps if we are searching for a precise artifact
-        _hasDesiredGroup : ctx => !!artifact ? ctx._gav.gav.group === group : true,
-        _hasDesiredArtifact : ctx => !!artifact ? ctx._gav.gav.artifact === artifact : true,
+        _hasDesiredGroup: ctx => !!artifact ? ctx._gav.gav.group === group : true,
+        _hasDesiredArtifact: ctx => !!artifact ? ctx._gav.gav.artifact === artifact : true,
         gav: ctx => ctx._gav.gav,
         // Pull this up so that we can modify it directly.
         // We can't modify through gav property as it's computed by a function in GavGrammar
@@ -85,4 +85,27 @@ export const DependencyGrammar = artifactContainerGrammar("dependency");
  */
 export function dependencyOfGrammar(group: string, artifact: string) {
     return artifactContainerGrammar("dependency", group, artifact);
+}
+
+const property = {
+    _gt: "<",
+    name: ElementName,
+    _close: ">",
+    value: /^[^<]+/,
+    _gt2: "</",
+    _closing: ElementName,
+    _done: ">",
+};
+
+export const PropertiesGrammar =
+    Microgrammar.fromDefinitions<PropertiesBlock>({
+        _po: "<properties>",
+        properties: zeroOrMore(property),
+    });
+
+/**
+ * Type for returned property
+ */
+export interface PropertiesBlock {
+    properties: Array<{ name: string, value: string }>;
 }

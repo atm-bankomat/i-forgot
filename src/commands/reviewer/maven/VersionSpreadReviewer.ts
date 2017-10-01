@@ -6,8 +6,8 @@ import { ProjectReviewer } from "@atomist/automation-client/operations/review/pr
 import { ReviewerCommandSupport } from "@atomist/automation-client/operations/review/ReviewerCommandSupport";
 import { clean, ProjectReview, ReviewResult } from "@atomist/automation-client/operations/review/ReviewResult";
 import { findMatches } from "@atomist/automation-client/project/util/parseUtils";
-import { dependencyOfGrammar } from "../../grammars/mavenGrammars";
-import { VersionedArtifact } from "../../grammars/VersionedArtifact";
+import { dependencyOfGrammar } from "../../../grammars/mavenGrammars";
+import { VersionedArtifact } from "../../../grammars/VersionedArtifact";
 
 @CommandHandler("Reviewer that reports the range of versions of an artifact", "version spread")
 @Tags("atomist", "maven", "library")

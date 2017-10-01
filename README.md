@@ -51,17 +51,24 @@ $ npm install
 ### Configuring your environment
 
 For the client to connect and authenticate to the Atomist API, a
-GitHub personal access token is required.
+GitHub personal access token is required. Additionally the API
+is only allowing members of a GitHub team called `atommist-automation`
+to successfully authenticate and register a new client.
 
-Please create a personal access token with `read:org` scope at
-https://github.com/settings/tokens .
+Please create a team in your GitHub organization with the name
+`atomist-automation` and add the user you want to use to the team. 
 
-Once you obtained the token make it available to the client by
+After that you can create a personal access token with `read:org` 
+scope at https://github.com/settings/tokens. 
+
+Once you obtained the token, make it available to the client by
 exporting it into a environment variable:
 
 ```
 $ export GITHUB_TOKEN=<your token goes here>
 ```
+
+Alternatively you can also place the token in `src/atomist.config.ts`.
 
 ## Starting up the automation-client
 

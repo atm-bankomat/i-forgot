@@ -7,7 +7,7 @@ import { RepoLoader } from "@atomist/automation-client/operations/common/repoLoa
 import { InMemoryProject } from "@atomist/automation-client/project/mem/InMemoryProject";
 import { Project } from "@atomist/automation-client/project/Project";
 import * as assert from "power-assert";
-import { VersionSpreadReviewer } from "../../../src/commands/reviewer/VersionSpreadReviewer";
+import { VersionSpreadReviewer } from "../../../../src/commands/reviewer/maven/VersionSpreadReviewer";
 import { NonSpringPom, springBootPom } from "./Poms";
 
 class TestVersionSpreadReviewer extends VersionSpreadReviewer {
