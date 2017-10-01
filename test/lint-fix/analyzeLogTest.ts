@@ -12,6 +12,6 @@ describe("analyzing the logs", () => {
                 const result = analyzeLog(data);
                 assert(result.length > 10, "that's too short");
                 done();
-            })
+            });
     });
 });

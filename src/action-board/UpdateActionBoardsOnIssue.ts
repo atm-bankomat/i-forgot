@@ -1,4 +1,3 @@
-import { GitHubUser, GitHubIssueLabel, GitHubIssueResult } from './../action-board/GitHubApiTypes';
 import {
   EventFired,
   EventHandler,
@@ -9,10 +8,11 @@ import {
   Secrets,
   Tags,
 } from "@atomist/automation-client/Handlers";
-import axios from "axios";
-import { globalActionBoardTracker, affectedBy } from '../action-board/globalState';
-import { doWazzup } from '../action-board/ActionBoard';
 import * as slack from "@atomist/slack-messages/SlackMessages";
+import axios from "axios";
+import { doWazzup } from "../action-board/ActionBoard";
+import { affectedBy, globalActionBoardTracker } from "../action-board/globalState";
+import { GitHubIssueLabel, GitHubIssueResult, GitHubUser } from "./../action-board/GitHubApiTypes";
 
 /*
 this is the graphql that would match the GitHub rest API:
@@ -83,9 +83,9 @@ export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
     const lastAction = issue.action;
 
     //const htmlUrlBase = issue.repo.org.provider ? issue.repo.org.provider.url : "https://github.com"
-    const apiUrlBase = issue.repo.org.provider ? issue.repo.org.provider.apiUrl : "https://api.github.com"
+    const apiUrlBase = issue.repo.org.provider ? issue.repo.org.provider.apiUrl : "https://api.github.com";
 
-    const apiUrl = `${apiUrlBase}/repos/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`
+    const apiUrl = `${apiUrlBase}/repos/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`;
 
     //const htmlUrl = `${htmlUrlBase}/${issue.repo.org.owner}/${issue.repo.name}/issues/${issue.name}`
     // const linkToIssue = slack.url(htmlUrl, `${issue.repo.org.owner}/${issue.repo.name}#${issue.name}`);
@@ -108,12 +108,12 @@ export class UpdateActionBoardsOnIssue implements HandleEvent<any> {
         return doWazzup(ctx,
           { ...actionBoard, ts: new Date().getTime() },
           githubToken, false,
-          `update to ${issue.repo.org.owner}/${issue.repo.name}#${issue.name}, ${lastAction}`)
+          `update to ${issue.repo.org.owner}/${issue.repo.name}#${issue.name}, ${lastAction}`);
       });
-    const things = Promise.all(promises)
+    const things = Promise.all(promises);
 
     return things.
       then(r => ctx.messageClient.addressUsers(`Updated ${boardsToUpdate.length} messages:\n${boardsToUpdate.map(b => b.wazzupMessageId).join("\n")}`, "jessitron")).
-      then(r => Promise.resolve({ code: 0 }))
+      then(r => Promise.resolve({ code: 0 }));
   }
 }

@@ -1,20 +1,20 @@
-import axios from 'axios';
 import {
     CommandHandler,
     HandleCommand,
     HandlerContext,
     HandlerResult,
-    Parameter,
-    Tags,
     MappedParameter,
     MappedParameters,
+    Parameter,
     Secret,
     Secrets,
+    Tags,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import * as slack from "@atomist/slack-messages/SlackMessages";
-import { teamStream, inProgressLabelName } from "./helpers";
-import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
+import axios from "axios";
+import { ActionBoardActivity, ActionBoardSpecifier, globalActionBoardTracker } from "./globalState";
+import { inProgressLabelName, teamStream } from "./helpers";
 
 @CommandHandler("Complete this lovely issue", "I am all done with this one")
 @Tags("action-board")
@@ -39,18 +39,16 @@ export class CloseIssue implements HandleCommand {
         const githubName = this.githubName;
         const slackUser = this.slackUser;
 
-
-
         const issueResource = encodeURI(`${issueUrl}`);
 
         const closePromise = axios({
-            method: 'patch',
+            method: "patch",
             url: issueResource,
             headers: { Authorization: `token ${githubToken}` },
             data: {
-                "state": "closed"
-            }
-        }).then((response) => {
+                state: "closed",
+            },
+        }).then(response => {
             logger.info(`Successfully closed ${issueUrl}`);
             ctx.messageClient.addressChannels(
                 `${slack.user(slackUser)} closed this issue: ` + this.issueUrl,
@@ -58,23 +56,22 @@ export class CloseIssue implements HandleCommand {
             return { code: 0 };
         }).catch(error => {
             ctx.messageClient.respond(`Failed to close ${issueUrl} ${error}`);
-            return { code: 1 }
-        })
+            return { code: 1 };
+        });
 
-        const removeLabelPromise = closePromise.then((handlerResult) => {
+        const removeLabelPromise = closePromise.then(handlerResult => {
             const labelResource = encodeURI(`${issueUrl}/labels/${inProgressLabelName}`);
             return axios.delete(labelResource,
-                { headers: { Authorization: `token ${githubToken}` } }
-            ).then((response) => {
-                logger.info(`Successfully removed a label from ${issueUrl}`)
+                { headers: { Authorization: `token ${githubToken}` } },
+            ).then(response => {
+                logger.info(`Successfully removed a label from ${issueUrl}`);
                 return handlerResult;
             }).catch(error => {
-                ctx.messageClient.respond(`Failed to remove ${inProgressLabelName} label from ${issueUrl} ${error}`)
+                ctx.messageClient.respond(`Failed to remove ${inProgressLabelName} label from ${issueUrl} ${error}`);
                 return { code: 1 };
             });
-        })
+        });
 
-        return removeLabelPromise
+        return removeLabelPromise;
     }
 }
-

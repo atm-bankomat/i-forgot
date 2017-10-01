@@ -1,26 +1,25 @@
-import axios from 'axios';
 import {
     CommandHandler,
     HandleCommand,
     HandlerContext,
     HandlerResult,
-    Parameter,
-    Tags,
     MappedParameter,
     MappedParameters,
+    Parameter,
     Secret,
     Secrets,
+    Tags,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
+import { buttonForCommand, MessageClient, MessageOptions } from "@atomist/automation-client/spi/message/MessageClient";
 import * as slack from "@atomist/slack-messages/SlackMessages";
-import { findLinkedRepositories, isWorkday, repositoryFromIssue, Repository, toEmoji, normalizeTimestamp, timeSince, inProgressLabelName } from "./helpers";
-import { whereAmIRunning } from './Provenance';
-import { GitHubIssueResult, hasLabel, GitHubIssueSearchResult } from './GitHubApiTypes';
-import { MessageOptions, buttonForCommand, MessageClient } from '@atomist/automation-client/spi/message/MessageClient';
-import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
-import { Unassign } from './Unassign';
-import { CloseIssue } from './Complete';
-
+import axios from "axios";
+import { CloseIssue } from "./Complete";
+import { GitHubIssueResult, GitHubIssueSearchResult, hasLabel } from "./GitHubApiTypes";
+import { ActionBoardActivity, ActionBoardSpecifier, globalActionBoardTracker } from "./globalState";
+import { findLinkedRepositories, inProgressLabelName, isWorkday, normalizeTimestamp, Repository, repositoryFromIssue, timeSince, toEmoji } from "./helpers";
+import { whereAmIRunning } from "./Provenance";
+import { Unassign } from "./Unassign";
 
 const teamStream = "#team-stream";
 const admin = "jessitron";
@@ -44,9 +43,7 @@ export class ActionBoard implements HandleCommand {
     @Secret(Secrets.USER_TOKEN)
     public githubToken: string;
 
-
     public handle(ctx: HandlerContext): Promise<HandlerResult> {
-
 
         const triggeredByUser: boolean = true;
         const collapse: boolean = false;
@@ -63,18 +60,18 @@ export class ActionBoard implements HandleCommand {
             channelName,
             { id: wazzupMessageId, ts: ts - 5 });
 
-        const actionBoard: ActionBoardSpecifier = { wazzupMessageId, channelId, channelName, githubName, collapse, ts }
+        const actionBoard: ActionBoardSpecifier = { wazzupMessageId, channelId, channelName, githubName, collapse, ts };
 
         return doWazzup(ctx,
             actionBoard,
-            githubToken, triggeredByUser
+            githubToken, triggeredByUser,
         ).then(
             activities => {
                 logger.info(`recording action board ${actionBoard.wazzupMessageId} with ${activities.length} activities)`);
                 globalActionBoardTracker.add({ ...actionBoard, activities });
                 return Promise.resolve({ code: 0 });
             });
-    };
+    }
 }
 
 @CommandHandler("Updates a list of things to work on", "update the wazzup message")
@@ -114,7 +111,7 @@ export class ActionBoardUpdate implements HandleCommand {
             channelName: this.channelName,
             githubName: this.githubName,
             collapse,
-            ts
+            ts,
         };
 
         return doWazzup(ctx,
@@ -165,10 +162,10 @@ function do_not_ping(username: string): string {
 */
 
 export function doWazzup(ctx: HandlerContext,
-    actionBoard: ActionBoardSpecifier,
-    githubToken: string,
-    triggeredByUser: boolean,
-    provenanceMessage?: string,
+                         actionBoard: ActionBoardSpecifier,
+                         githubToken: string,
+                         triggeredByUser: boolean,
+                         provenanceMessage?: string,
 ): Promise<ActionBoardActivity[]> {
 
     function issues(): Promise<Activities> {
@@ -177,10 +174,10 @@ export function doWazzup(ctx: HandlerContext,
         const apiSearch = encodeURI(`https://api.github.com/search/issues?q=${query}`);
 
         return axios.get(apiSearch,
-            { headers: { Authorization: `token ${githubToken}` } }
-        ).then((response) => {
+            { headers: { Authorization: `token ${githubToken}` } },
+        ).then(response => {
             const result = response.data as GitHubIssueSearchResult;
-            logger.info("Successfully got stuff from GitHub")
+            logger.info("Successfully got stuff from GitHub");
 
             // no results, sad day
             if (result.total_count === 0) {
@@ -188,10 +185,10 @@ export function doWazzup(ctx: HandlerContext,
                 const summary: Summary = {
                     appearance: {
                         text: `There are no issues assigned to you (${this.githubName}) in GitHub.`,
-                        fallback: "no issues for you"
-                    }
+                        fallback: "no issues for you",
+                    },
                 };
-                return Promise.resolve({ summary, activities: [] })
+                return Promise.resolve({ summary, activities: [] });
             }
 
             logger.info("generating summary");
@@ -199,8 +196,8 @@ export function doWazzup(ctx: HandlerContext,
                 appearance: {
                     color: gitHubIssueColor,
                     text: `You have ${slack.url(htmlSearch, `${result.total_count} open issues on GitHub`)}.`,
-                    fallback: "gh issue count"
-                }
+                    fallback: "gh issue count",
+                },
             };
 
             const linkedRepoPromise: Promise<Repository[]> = findLinkedRepositories(ctx, actionBoard.channelId);
@@ -214,11 +211,11 @@ export function doWazzup(ctx: HandlerContext,
                         priority: priority(linkedRepositories, i),
                         recency: normalizeTimestamp(i.updated_at),
                         current: hasLabel(i, inProgressLabelName),
-                        appearance: renderIssue(i)
-                    }
+                        appearance: renderIssue(i),
+                    };
                 });
 
-                return Promise.resolve({ summary, activities })
+                return Promise.resolve({ summary, activities });
             });
         }).catch(error => {
             const summary: Summary = {
@@ -226,20 +223,19 @@ export function doWazzup(ctx: HandlerContext,
                     color: "FF0000",
                     text: "Error from GitHub: " + error,
                     fallback: "an error from GitHub",
-                }
-            }
+                },
+            };
             return ctx.messageClient.addressUsers(`Error doing ${apiSearch}: ${error}`, admin).
-                then(z => Promise.resolve({ summary, activities: [] }))
+                then(z => Promise.resolve({ summary, activities: [] }));
 
-        })
-    };
-
+        });
+    }
 
     return Promise.all([whereAmIRunning(), issues()]).then(values => {
 
         const [provenance, issues] = values;
-        console.log("ISSUE summary: " + JSON.stringify(issues.summary))
-        console.log("ISSUE activites: " + JSON.stringify(issues.activities.length))
+        console.log("ISSUE summary: " + JSON.stringify(issues.summary));
+        console.log("ISSUE activites: " + JSON.stringify(issues.activities.length));
         const summaryAttachments = [issues.summary.appearance];
         const currentActivities = issues.activities.filter(a => a.current);
         const futureActivities = issues.activities.filter(a => !a.current).sort(priorityThenRecency).slice(0, 5);
@@ -247,19 +243,16 @@ export function doWazzup(ctx: HandlerContext,
         const currentAttachments = currentActivities.map(a => a.appearance);
         const text = currentActivities.length > 0 ? `You are currently working on ${
             currentActivities.length === 1 ? "one thing:" : currentActivities.length + " things"}`
-            : 'Here are some things you could do.';
-
+            : "Here are some things you could do.";
 
         const futureAttachments = actionBoard.collapse ? [] : futureActivities.map(a => a.appearance);
         const includedActivities = actionBoard.collapse ? currentActivities : currentActivities.concat(futureActivities);
-
 
         const collapseButton = actionBoard.collapse ?
             buttonForCommand({ text: "Expand" },
                 ActionBoardUpdate.Name, { ...actionBoard, collapse: "false" }) :
             buttonForCommand({ text: "Collapse" },
-                ActionBoardUpdate.Name, { ...actionBoard, collapse: "true" })
-
+                ActionBoardUpdate.Name, { ...actionBoard, collapse: "true" });
 
         const maintenanceAttachments = [{
             fallback: "buttons to refresh",
@@ -267,14 +260,14 @@ export function doWazzup(ctx: HandlerContext,
                 buttonForCommand({ text: "Refresh" },
                     ActionBoardUpdate.Name,
                     { ...actionBoard, collapse: actionBoard.collapse ? "true" : "false" }),
-                collapseButton
-            ]
-        }]
+                collapseButton,
+            ],
+        }];
 
         const provenanceAttachments = actionBoard.collapse ? [] : [{
             fallback: "provenance",
             footer: provenance +
-            `\n ID ${actionBoard.wazzupMessageId}${provenanceMessage ? `\nlast update: ${provenanceMessage}` : ""}`
+            `\n ID ${actionBoard.wazzupMessageId}${provenanceMessage ? `\nlast update: ${provenanceMessage}` : ""}`,
         }];
 
         const message: slack.SlackMessage = {
@@ -283,8 +276,8 @@ export function doWazzup(ctx: HandlerContext,
                 summaryAttachments).concat(
                 maintenanceAttachments).concat(
                 futureAttachments).concat(
-                provenanceAttachments)
-        }
+                provenanceAttachments),
+        };
 
         const messageOptions: MessageOptions = {
             id: actionBoard.wazzupMessageId,
@@ -293,16 +286,16 @@ export function doWazzup(ctx: HandlerContext,
             triggeredByUser ? "always" :
                 "update_only",
             ts: actionBoard.ts + 1,
-        }
+        };
 
         return ctx.messageClient.addressChannels(message,
             actionBoard.channelName,
             messageOptions).then(z => {
-                logger.info("Returning activities")
+                logger.info("Returning activities");
                 const activities: ActionBoardActivity[] =
-                    includedActivities.map(i => { return { identifier: i.identifier, } });
-                return Promise.resolve(activities)
-            })
+                    includedActivities.map(i => ({ identifier: i.identifier }));
+                return Promise.resolve(activities);
+            });
     });
 }
 
@@ -314,19 +307,19 @@ function priorityThenRecency(activity1: Activity, activity2: Activity): number {
 }
 
 interface Activities {
-    summary: Summary,
-    activities: Activity[]
+    summary: Summary;
+    activities: Activity[];
 }
 interface Summary {
-    appearance: slack.Attachment
+    appearance: slack.Attachment;
 }
 
 interface Activity {
-    identifier: string,
-    priority: number,
-    recency: number,
-    appearance: slack.Attachment,
-    current: boolean
+    identifier: string;
+    priority: number;
+    recency: number;
+    appearance: slack.Attachment;
+    current: boolean;
 }
 
 // higher is better
@@ -334,7 +327,7 @@ function priority(linkedRepositories: Repository[], issue: GitHubIssueResult): n
     const repository = repositoryFromIssue(issue);
 
     let opinion = 0;
-    let atWork = isWorkday();
+    const atWork = isWorkday();
 
     if (hasLabel(issue, upNextLabelName)) {
         // queued
@@ -374,12 +367,10 @@ function priority(linkedRepositories: Repository[], issue: GitHubIssueResult): n
     return opinion;
 }
 
-
-
 function renderIssue(issue: GitHubIssueResult): slack.Attachment {
 
     const issueTitle = `#${issue.number}: ${issue.title}`;
-    const labels = issue.labels.map((label) => toEmoji(label.name)).join(" ");
+    const labels = issue.labels.map(label => toEmoji(label.name)).join(" ");
     const title = `${labels} ${slack.url(issue.html_url, issueTitle)}`;
     const repository = repositoryFromIssue(issue);
 
@@ -391,34 +382,28 @@ function renderIssue(issue: GitHubIssueResult): slack.Attachment {
         author_name: `by @${issue.user.login} ${timeSince(issue.created_at)}`, // todo: translate to slack?
         author_icon: issue.user.avatar_url,
         color: gitHubIssueColor,
-        footer_icon: "http://images.atomist.com/rug/issue-open.png"
+        footer_icon: "http://images.atomist.com/rug/issue-open.png",
     };
 
     if (hasLabel(issue, inProgressLabelName)) {
         attachment.color = "#EF64E1";
         attachment.actions = [
             buttonForCommand({ text: "Postpone" }, PostponeWork.Name,
-                { issueUrl: issue.url }, ),
+                { issueUrl: issue.url } ),
             buttonForCommand({ text: "Complete!" }, CloseIssue.Name,
-                { issueUrl: issue.url })
-        ]
+                { issueUrl: issue.url }),
+        ];
     } else {
         attachment.actions = [
             buttonForCommand({ text: "Commence" }, CommenceWork.Name,
                 { issueUrl: issue.url }),
             buttonForCommand({ text: "Unassign me" }, Unassign.Name,
-                { issueUrl: issue.url })
-        ]
+                { issueUrl: issue.url }),
+        ];
     }
 
     return attachment;
 }
-
-
-
-
-
-
 
 @CommandHandler("Start work on a thing", "i am going to start work on an issue and i have the apiUrl")
 @Tags("jessitron")
@@ -450,14 +435,14 @@ export class CommenceWork implements HandleCommand {
 
         return axios.post(addLabel,
             [inProgressLabelName],
-            { headers: { Authorization: `token ${githubToken}` } }
-        ).then((response) => {
-            logger.info(`Successfully added a label to ${issueUrl}`)
-            return Promise.resolve({ code: 0 })
+            { headers: { Authorization: `token ${githubToken}` } },
+        ).then(response => {
+            logger.info(`Successfully added a label to ${issueUrl}`);
+            return Promise.resolve({ code: 0 });
         }).catch(error => {
-            ctx.messageClient.respond(`Failed to add ${inProgressLabelName} label to ${issueUrl}.`)
-            return Promise.resolve({ code: 1 })
-        })
+            ctx.messageClient.respond(`Failed to add ${inProgressLabelName} label to ${issueUrl}.`);
+            return Promise.resolve({ code: 1 });
+        });
     }
 }
 
@@ -490,14 +475,13 @@ export class PostponeWork implements HandleCommand {
         const labelResource = encodeURI(`${issueUrl}/labels/${inProgressLabelName}`);
 
         return axios.delete(labelResource,
-            { headers: { Authorization: `token ${githubToken}` } }
-        ).then((response) => {
-            logger.info(`Successfully removed a label from ${issueUrl}`)
-            return Promise.resolve({ code: 0 })
+            { headers: { Authorization: `token ${githubToken}` } },
+        ).then(response => {
+            logger.info(`Successfully removed a label from ${issueUrl}`);
+            return Promise.resolve({ code: 0 });
         }).catch(error => {
-            ctx.messageClient.respond(`Failed to remove ${inProgressLabelName} label from ${issueUrl} ${error}`)
-            return Promise.resolve({ code: 1 })
-        })
+            ctx.messageClient.respond(`Failed to remove ${inProgressLabelName} label from ${issueUrl} ${error}`);
+            return Promise.resolve({ code: 1 });
+        });
     }
 }
-
