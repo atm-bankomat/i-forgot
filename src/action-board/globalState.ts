@@ -3,7 +3,7 @@ import { logger } from "@atomist/automation-client/internal/util/logger";
 const fs = require("fs");
 
 export interface ActionBoardActivity {
-    identifier: string
+    identifier: string;
 }
 
 export interface ActionBoardSpecifier {
@@ -13,10 +13,10 @@ export interface ActionBoardSpecifier {
     githubName: string;
     collapse: boolean;
     ts: number;
-    activities?: ActionBoardActivity[]
+    activities?: ActionBoardActivity[];
 }
 
-export function affectedBy(actionBoard: ActionBoardSpecifier, issue: { apiUrl: string, assignees: { login: string }[] }): boolean {
+export function affectedBy(actionBoard: ActionBoardSpecifier, issue: { apiUrl: string, assignees: Array<{ login: string }> }): boolean {
     if (!actionBoard.activities) {
         return true;
     }
@@ -38,7 +38,7 @@ export interface TrackActionBoards {
 
 class ActionBoardTracker implements TrackActionBoards {
 
-    private CacheFile = "actionBoardsCache.json"
+    private CacheFile = "actionBoardsCache.json";
     private writePromise = Promise.resolve(null);
     private cache: {} = {}; // channelName -> ActionBoardSpecifier
 
@@ -48,11 +48,11 @@ class ActionBoardTracker implements TrackActionBoards {
             this.cache = JSON.parse(content) || {};
             logger.info("Read from action board cache: " + JSON.stringify(this.cache));
         } catch {
-            (e) => {
+            e => {
                 this.cache = {};
                 logger.error(`FYI, unable to read ${this.CacheFile}: ` + JSON.stringify(e));
-            }
-        };
+            };
+        }
     }
 
     private writeCache(content: {}) {
@@ -60,22 +60,22 @@ class ActionBoardTracker implements TrackActionBoards {
         this.writePromise =
             this.writePromise.
                 then(a => fs.writeFile(filename, JSON.stringify(content))).
-                catch(e => logger.error(`FYI, unable to write ${this.CacheFile}`))
+                catch(e => logger.error(`FYI, unable to write ${this.CacheFile}`));
     }
 
-    add(one: ActionBoardSpecifier): void {
+    public add(one: ActionBoardSpecifier): void {
         this.cache[one.channelName] = one;
         this.writeCache(this.cache);
     }
-    update(one: ActionBoardSpecifier): void {
+    public update(one: ActionBoardSpecifier): void {
         if (this.cache[one.channelName].wazzupMessageId === one.wazzupMessageId) {
             this.cache[one.channelName] = one;
             this.writeCache(this.cache);
         } else {
-            logger.info(`Not storing ${one.wazzupMessageId} because it is not current for the channel`)
+            logger.info(`Not storing ${one.wazzupMessageId} because it is not current for the channel`);
         }
     }
-    fetchAll(): ActionBoardSpecifier[] {
+    public fetchAll(): ActionBoardSpecifier[] {
         return Object.values(this.cache) as ActionBoardSpecifier[];
     }
 

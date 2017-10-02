@@ -1,4 +1,3 @@
-import { RepoId } from '@atomist/automation-client/operations/common/RepoId';
 import * as GraphQL from "@atomist/automation-client/graph/graphQL";
 import {
     EventFired,
@@ -6,19 +5,20 @@ import {
     HandleEvent,
     HandlerContext,
     HandlerResult,
-    Tags,
-    Success,
-    Secrets,
     Secret,
+    Secrets,
+    Success,
+    Tags,
 } from "@atomist/automation-client/Handlers";
+import { CommandResult } from "@atomist/automation-client/internal/util/commandLine";
 import { logger } from "@atomist/automation-client/internal/util/logger";
-import { FailureReport, isFailureReport } from "../lint-fix/travis/stuff";
-import { GitProject } from "@atomist/automation-client/project/git/GitProject";
+import { RepoId } from "@atomist/automation-client/operations/common/RepoId";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
-import * as _ from 'lodash';
-import { CommandResult } from '@atomist/automation-client/internal/util/commandLine';
-import { Microgrammar } from '@atomist/microgrammar/Microgrammar';
-import { doWithFileMatches } from '@atomist/automation-client/project/util/parseUtils';
+import { GitProject } from "@atomist/automation-client/project/git/GitProject";
+import { doWithFileMatches } from "@atomist/automation-client/project/util/parseUtils";
+import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
+import * as _ from "lodash";
+import { FailureReport, isFailureReport } from "../lint-fix/travis/stuff";
 
 const Query = `
 subscription StartDownstreamTests {
@@ -59,21 +59,19 @@ export class StartDownstreamTests implements HandleEvent<any> {
         const repoSlug = `${build.repo.name}/${build.repo.owner}`;
         const upstreamRepo = "atomist/microgrammar";
         const downstreamRepo = { owner: "atomist", name: "automation-client-samples-ts" };
-        const [newDependency, newVersion] = parseCascadeTag(build.pullRequest.mergeCommit.tags)
+        const [newDependency, newVersion] = parseCascadeTag(build.pullRequest.mergeCommit.tags);
         const realPublishedModule = "@atomist/microgrammar";
-        const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo}#${build.pullRequest.number}`
-
+        const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo}#${build.pullRequest.number}`;
 
         if (repoSlug === slug(downstreamRepo)) {
-            console.log(`Time to trigger a downstream build!`)
+            console.log(`Time to trigger a downstream build!`);
 
             updateDependencyOnBranch(githubToken,
                 { repo: downstreamRepo, branch, commitMessage },
                 realPublishedModule, newDependency, newVersion);
 
-
         } else {
-            console.log(`No downstream tests to trigger on a ${build.trigger} build from ${repoSlug}.`)
+            console.log(`No downstream tests to trigger on a ${build.trigger} build from ${repoSlug}.`);
             return Promise.resolve({ code: 0 });
         }
 
@@ -87,17 +85,17 @@ export class StartDownstreamTests implements HandleEvent<any> {
 }
 
 interface Repository {
-    name: string,
-    owner: string,
+    name: string;
+    owner: string;
 }
 function slug(repository: Repository): string {
-    return `${repository.name}/${repository.owner}`
+    return `${repository.name}/${repository.owner}`;
 }
 
 function updateDependencyOnBranch(githubToken: string,
-    target: PushInstruction,
-    dependencyToReplace: string,
-    newDependency: string, newDependencyVersion: string): Promise<void | FailureReport> {
+                                  target: PushInstruction,
+                                  dependencyToReplace: string,
+                                  newDependency: string, newDependencyVersion: string): Promise<void | FailureReport> {
 
     // clone the target project.
     const cloneProject: Promise<GitProject | FailureReport> =
@@ -105,16 +103,16 @@ function updateDependencyOnBranch(githubToken: string,
             catch(e => ({ circumstance: `Cloning project ${slug(target.repo)}`, error: e }));
 
     const editProject: Promise<GitProject | FailureReport> = cloneProject.then(project => {
-        if (isFailureReport(project)) { return project } else {
-            let oldDependency = Microgrammar.fromString(`"$name": "$version"`,
+        if (isFailureReport(project)) { return project; } else {
+            const oldDependency = Microgrammar.fromString(`"$name": "$version"`,
                 {
                     name: dependencyToReplace,
-                    version: /[0-9^.-]+/
-                }
+                    version: /[0-9^.-]+/,
+                },
             );
 
             return doWithFileMatches(project, "package.json", oldDependency, f => {
-                let m = f.matches[0] as any;
+                const m = f.matches[0] as any;
                 m.name = newDependency;
                 m.version = newDependencyVersion;
             }).run().then(files => project as GitProject | FailureReport);
@@ -122,21 +120,18 @@ function updateDependencyOnBranch(githubToken: string,
     }).catch(error => ({ circumstance: "Editing package.json", error }));
 
     const commitAndPushToProject = editProject.then(project => {
-        if (isFailureReport(project)) { return project } else {
-            commitAndPush(target, project)
+        if (isFailureReport(project)) { return project; } else {
+            commitAndPush(target, project);
         }
     }).catch(error => ({ circumstance: "committing and pushing", error }));
-
-
 
     return Promise.resolve();
 }
 
-
 interface PushInstruction {
-    branch: string,
-    repo: Repository,
-    commitMessage: string,
+    branch: string;
+    repo: Repository;
+    commitMessage: string;
 }
 
 function commitAndPush(
@@ -152,7 +147,7 @@ function commitAndPush(
             } else {
                 return Promise.resolve(Success);
             }
-        })
+        });
 }
 
 function parseCascadeTag(tags: string[]): [string, string] {

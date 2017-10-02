@@ -1,6 +1,6 @@
-import { HandlerContext } from '@atomist/automation-client/Handlers';
+import { HandlerContext } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
-import { GitHubIssueResult } from './GitHubApiTypes';
+import { GitHubIssueResult } from "./GitHubApiTypes";
 
 export const teamStream = "#team-stream";
 export const inProgressLabelName = "in-progress";
@@ -11,7 +11,7 @@ const reposLinkedToThisChannel = `query ($teamId: ID!, $channelId: ID!) {
     channels(id: $channelId) {
       links {
         repo {
-          name 
+          name
           owner
         }
       }
@@ -20,28 +20,27 @@ const reposLinkedToThisChannel = `query ($teamId: ID!, $channelId: ID!) {
 }`;
 
 export interface Repository {
-    name: string,
-    owner: string
+    name: string;
+    owner: string;
 }
 
 export function findLinkedRepositories(
     ctx: HandlerContext,
     channelId: string): Promise<Repository[]> {
     return ctx.graphClient.executeQuery<any, any>(reposLinkedToThisChannel,
-        { teamId: ctx.teamId, channelId: channelId })
+        { teamId: ctx.teamId, channelId })
         .then(result => {
             // logger.info("repos linked to query result: " + JSON.stringify(result, null, 2));
             if (!result.ChatTeam[0].channels[0]) {
-                logger.error(`WTF how do we have no channels in ${result.ChatTeam[0].id}`)
+                logger.error(`WTF how do we have no channels in ${result.ChatTeam[0].id}`);
                 return [];
             }
             return result.ChatTeam[0].channels[0].links.map(link => link.repo as Repository);
         }).catch(error => {
-            logger.error(`failure running query ${reposLinkedToThisChannel}: ${error}`)
+            logger.error(`failure running query ${reposLinkedToThisChannel}: ${error}`);
             return [];
         });
 }
-
 
 export function isWorkday() {
     // I'm not trying -that- hard.
@@ -53,13 +52,13 @@ const repoUrlRegex = /.*repos\/(.*)\/(.*)/;
 export function repositoryFromIssue(issue: GitHubIssueResult): Repository {
     const m = issue.repository_url.match(repoUrlRegex);
     if (!m) {
-        return { name: `I could not parse the repoUrl of ${issue.repository_url}`, owner: '' };
+        return { name: `I could not parse the repoUrl of ${issue.repository_url}`, owner: "" };
     }
     return { name: m[2], owner: m[1] };
 }
 
 export function toEmoji(s: string): string {
-    let validEmojiName = s.replace(/:/g, "-").replace(/ /g, "-").toLowerCase();
+    const validEmojiName = s.replace(/:/g, "-").replace(/ /g, "-").toLowerCase();
     return `:${validEmojiName}:`;
 }
 
@@ -75,7 +74,6 @@ export function normalizeTimestamp(timestamp: string): number {
     }
     return Math.floor(pd / 1000);
 }
-
 
 export function timeSince(dateString: string) {
     if (dateString == null) {

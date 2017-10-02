@@ -1,20 +1,20 @@
-import axios from 'axios';
 import {
     CommandHandler,
     HandleCommand,
     HandlerContext,
     HandlerResult,
-    Parameter,
-    Tags,
     MappedParameter,
     MappedParameters,
+    Parameter,
     Secret,
     Secrets,
+    Tags,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
 import * as slack from "@atomist/slack-messages/SlackMessages";
+import axios from "axios";
+import { ActionBoardActivity, ActionBoardSpecifier, globalActionBoardTracker } from "./globalState";
 import { teamStream } from "./helpers";
-import { globalActionBoardTracker, ActionBoardSpecifier, ActionBoardActivity } from './globalState';
 
 @CommandHandler("Unassign me from this issue", "I'm not going to do this one")
 @Tags("action-board")
@@ -46,19 +46,18 @@ export class Unassign implements HandleCommand {
         const assigneesResource = encodeURI(`${issueUrl}/assignees`);
 
         return axios({
-            method: 'delete',
+            method: "delete",
             url: assigneesResource,
             data: {
-                "assignees": [githubName],
+                assignees: [githubName],
             },
-            headers: { Authorization: `token ${githubToken}` }
-        }).then((response) => {
-            logger.info(`Successfully unassigned ${githubName} from ${issueUrl}`)
-            return Promise.resolve({ code: 0 })
+            headers: { Authorization: `token ${githubToken}` },
+        }).then(response => {
+            logger.info(`Successfully unassigned ${githubName} from ${issueUrl}`);
+            return Promise.resolve({ code: 0 });
         }).catch(error => {
-            ctx.messageClient.respond(`Failed to unassign ${githubName} from ${issueUrl} ${error}`)
-            return Promise.resolve({ code: 1 })
-        })
+            ctx.messageClient.respond(`Failed to unassign ${githubName} from ${issueUrl} ${error}`);
+            return Promise.resolve({ code: 1 });
+        });
     }
 }
-
