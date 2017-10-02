@@ -1,4 +1,3 @@
-import * as GraphQL from "@atomist/automation-client/graph/graphQL";
 import {
     EventFired,
     EventHandler,
@@ -10,37 +9,40 @@ import {
     Success,
     Tags,
 } from "@atomist/automation-client/Handlers";
-import { CommandResult } from "@atomist/automation-client/internal/util/commandLine";
-import { logger } from "@atomist/automation-client/internal/util/logger";
-import { RepoId } from "@atomist/automation-client/operations/common/RepoId";
 import { GitCommandGitProject } from "@atomist/automation-client/project/git/GitCommandGitProject";
 import { GitProject } from "@atomist/automation-client/project/git/GitProject";
 import { doWithFileMatches } from "@atomist/automation-client/project/util/parseUtils";
 import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 import * as _ from "lodash";
 import { FailureReport, isFailureReport } from "../lint-fix/travis/stuff";
+import { Failure } from "@atomist/automation-client/HandlerResult";
 
 const Query = `
-subscription StartDownstreamTests {
-    Build(trigger: pull_request, status: passed) {
-       buildUrl
-       name
-       provider
-       trigger
-       commit {
-         sha
-         tags {
+subscription StartDownstreamTests 
+{
+  Build(trigger: pull_request, status: passed) {
+    buildUrl
+    name
+    provider
+    trigger
+    pullRequest {
+      number
+      head {
+        sha
+        tags {
           name
-         }
-       }
-       repo {
-        name
-        owner
-        channels {
-         name
         }
-       }
-     }
+      }
+    }
+    repo {
+      name
+      owner
+      channels {
+        name
+      }
+    }
+  }
+}
 `;
 
 @EventHandler("After a PR build, run downstream tests", Query)
@@ -57,30 +59,25 @@ export class StartDownstreamTests implements HandleEvent<any> {
         const branch = build.branch;
         const githubToken = this.githubToken;
         const repoSlug = `${build.repo.name}/${build.repo.owner}`;
-        const upstreamRepo = "atomist/microgrammar";
-        const downstreamRepo = { owner: "atomist", name: "automation-client-samples-ts" };
-        const [newDependency, newVersion] = parseCascadeTag(build.pullRequest.mergeCommit.tags);
+        const upstreamRepo = { owner: "atm-bankomat", name: "microgrammar" };
+        const downstreamRepo = { owner: "atm-bankomat", name: "automation-client-samples-ts" };
+        const [newDependency, newVersion] = parseCascadeTag(_.get(build, "pullRequest.head.tags" ));
         const realPublishedModule = "@atomist/microgrammar";
         const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo}#${build.pullRequest.number}`;
 
-        if (repoSlug === slug(downstreamRepo)) {
+        if (repoSlug === slug(upstreamRepo)) {
             console.log(`Time to trigger a downstream build!`);
 
-            updateDependencyOnBranch(githubToken,
+            return updateDependencyOnBranch(githubToken,
                 { repo: downstreamRepo, branch, commitMessage },
-                realPublishedModule, newDependency, newVersion);
+                realPublishedModule, newDependency, newVersion)
+                .then(() => Success)
+                .catch(() => Failure);
 
         } else {
             console.log(`No downstream tests to trigger on a ${build.trigger} build from ${repoSlug}.`);
-            return Promise.resolve({ code: 0 });
+            return Promise.resolve(Success);
         }
-
-        return Promise.all(e.data.Push.map(p =>
-            ctx.messageClient.addressChannels(`Got a push with sha \`${p.after.sha}\``,
-                p.repo.channels.map(c => c.name))))
-            .then(() => {
-                return Promise.resolve({ code: 0 });
-            });
     }
 }
 
@@ -123,9 +120,9 @@ function updateDependencyOnBranch(githubToken: string,
         if (isFailureReport(project)) { return project; } else {
             commitAndPush(target, project);
         }
-    }).catch(error => ({ circumstance: "committing and pushing", error }));
+    }).catch(error => ({ circumstance: "Committing and pushing", error }));
 
-    return Promise.resolve();
+    return commitAndPushToProject;
 }
 
 interface PushInstruction {
@@ -150,6 +147,14 @@ function commitAndPush(
         });
 }
 
-function parseCascadeTag(tags: string[]): [string, string] {
-    return ["@atomist/microgrammar_cascade", "0.6.3"]; // TODO: implement
+export function parseCascadeTag(tags: any[]): [string, string] {
+    // @atomist/microgrammar_cdupuis-patch-3-0.7.0
+    if (tags && tags.length > 0) {
+        const regex = /(.*)-([0-9]*.[0-9]*.[0-9]*)/
+        const matches = regex.exec(tags[0].name);
+        return [matches[1], matches[2]];
+    } else {
+        return null;
+    }
+
 }

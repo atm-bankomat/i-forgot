@@ -4,9 +4,9 @@
   "repository": "git@github.com:atm-osphere/automation-client.git",
   "description": "This is my first Atomist automation node",
   "dependencies": {
-    "@atomist/automation-client": "^0.1.31",
-    "@atomist/slack-messages": "^0.11.0",
+    "@atomist/automation-client": "^0.1.36",
     "@atomist/microgrammar": "^0.6.2",
+    "@atomist/slack-messages": "^0.11.0",
     "@types/winston": "^2.3.5",
     "cfenv": "^1.0.4",
     "child-process": "^1.0.2",
@@ -44,10 +44,11 @@
     "testone": "mocha --compilers ts:espower-typescript/guess \"test/**/${TEST:-*.ts}\"",
     "test": "mocha --compilers ts:espower-typescript/guess \"test/**/*.ts\"",
     "benchmark": "mocha --prof --compilers ts:espower-typescript/guess \"test/**/*Benchmark.ts\"; node --prof-process isolate-* > profile.txt",
-    "start": "npm run compile && $(npm bin)/atomist-client ",
+    "start": "npm run compile && $(npm bin)/atomist-client $NODE_DEBUG_OPTION",
     "autostart": "npm-run-all --parallel watch:build watch:server --print-label",
     "watch:build": "tsc --watch",
-    "watch:server": "nodemon node_modules/@atomist/automation-client/start.client.js --watch './build'"
+    "watch:server": "nodemon node_modules/@atomist/automation-client/start.client.js --watch './build'"  ,
+    "debug": "npm run compile && node $NODE_DEBUG_OPTION --trace-warnings node_modules/@atomist/automation-client/start.client.js"
   },
   "author": "Atomist, Inc.",
   "license": "GPL-3.0",
