@@ -26,6 +26,9 @@ subscription StartDownstreamTests
     provider
     trigger
     pullRequest {
+      branch {
+        name
+      }
       number
       head {
         sha
@@ -55,14 +58,14 @@ export class StartDownstreamTests implements HandleEvent<any> {
     public handle(e: EventFired<any>, ctx: HandlerContext): Promise<HandlerResult> {
 
         const build = e.data.Build[0];
-        const branch = build.branch;
+        const branch = _.get(build, "pullRequest.branch.name") as string;
         const githubToken = this.githubToken;
         const repoSlug = `${build.repo.name}/${build.repo.owner}`;
         const upstreamRepo = {owner: "atm-bankomat", name: "microgrammar"};
         const downstreamRepo = {owner: "atm-bankomat", name: "automation-client-samples-ts"};
         const [newDependency, newVersion] = parseCascadeTag(_.get(build, "pullRequest.head.tags"));
         const realPublishedModule = "@atomist/microgrammar";
-        const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo}#${build.pullRequest.number}`;
+        const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo.owner}/${upstreamRepo.name}#${build.pullRequest.number}`;
 
         if (repoSlug === slug(upstreamRepo)) {
             console.log(`Time to trigger a downstream build!`);
@@ -96,7 +99,7 @@ function updateDependencyOnBranch(githubToken: string,
 
     // clone the target project.
     const cloneProject: Promise<GitProject | FailureReport> =
-        GitCommandGitProject.cloned(githubToken, target.repo.owner, target.repo.name, target.branch).catch(e => ({
+        GitCommandGitProject.cloned(githubToken, target.repo.owner, target.repo.name).catch(e => ({
             circumstance: `Cloning project ${slug(target.repo)}`,
             error: e
         }));
