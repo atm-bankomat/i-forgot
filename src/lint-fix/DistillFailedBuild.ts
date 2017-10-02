@@ -15,7 +15,6 @@ import {
     MappedParameter,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
-import { PushWithRepoSubscription } from "../schema";
 import { teamStream } from "../action-board/helpers";
 import { authorizeWithGithubToken, FailureReport, isFailureReport, commonTravisHeaders, logFromJobId, publicTravisEndpoint, jobIdForBuild } from "./travis/stuff";
 import axios from "axios";
@@ -94,7 +93,7 @@ export class FailedBuildLog implements HandleEvent<any> {
         const githubToken = this.githubToken;
         const statusData = e.data.Status[0];
 
-        ctx.messageClient.addressUsers(`Got a status with id ${statusData._id}`, "jessitron");
+        //ctx.messageClient.addressUsers(`Got a status with id ${statusData._id}`, "jessitron");
 
         if (statusData.context !== "continuous-integration/travis-ci/push" ||
             statusData.state !== "failure") {

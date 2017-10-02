@@ -14,7 +14,6 @@ import {
     Secret,
 } from "@atomist/automation-client/Handlers";
 import { logger } from "@atomist/automation-client/internal/util/logger";
-import { PushWithRepoSubscription } from "../schema";
 import { teamStream } from "../action-board/helpers";
 import { authorizeWithGithubToken, isFailureReport, commonTravisHeaders, FailureReport, TravisAuth } from "./travis/stuff";
 import axios from "axios";

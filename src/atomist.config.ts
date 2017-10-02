@@ -20,21 +20,17 @@ const token = process.env["GITHUB_TOKEN"];
 export const configuration: Configuration = {
     name: "action-board",
     version: "0.2.4",
-    teamId: "T6MFSUPDL",
+    teamId: "T7BPVSAR3",
     commands: [
         // build
         () => new BuildLog(),
         () => new BuildOnTravis(),
         () => new DistillBuildLog(),
-        () => new NewAutomation(),
     ],
     events: [
-        //  () => new UpdateActionBoardsOnIssue(),
         () => new FailedBuildLog(),
-        () => new LintEveryBranch(),
     ],
     ingestors: [
-        () => new HelloIngestor(),
     ],
     token,
     http: {
