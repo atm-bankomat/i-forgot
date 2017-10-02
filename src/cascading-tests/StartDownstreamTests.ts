@@ -52,16 +52,15 @@ export class StartDownstreamTests implements HandleEvent<any> {
     @Secret(Secrets.ORG_TOKEN)
     public githubToken: string;
 
-    public handle(e: EventFired<any>, ctx: HandlerContext):
-        Promise<HandlerResult> {
+    public handle(e: EventFired<any>, ctx: HandlerContext): Promise<HandlerResult> {
 
         const build = e.data.Build[0];
         const branch = build.branch;
         const githubToken = this.githubToken;
         const repoSlug = `${build.repo.name}/${build.repo.owner}`;
-        const upstreamRepo = { owner: "atm-bankomat", name: "microgrammar" };
-        const downstreamRepo = { owner: "atm-bankomat", name: "automation-client-samples-ts" };
-        const [newDependency, newVersion] = parseCascadeTag(_.get(build, "pullRequest.head.tags" ));
+        const upstreamRepo = {owner: "atm-bankomat", name: "microgrammar"};
+        const downstreamRepo = {owner: "atm-bankomat", name: "automation-client-samples-ts"};
+        const [newDependency, newVersion] = parseCascadeTag(_.get(build, "pullRequest.head.tags"));
         const realPublishedModule = "@atomist/microgrammar";
         const commitMessage = `Test ${realPublishedModule} for ${upstreamRepo}#${build.pullRequest.number}`;
 
@@ -69,7 +68,7 @@ export class StartDownstreamTests implements HandleEvent<any> {
             console.log(`Time to trigger a downstream build!`);
 
             return updateDependencyOnBranch(githubToken,
-                { repo: downstreamRepo, branch, commitMessage },
+                {repo: downstreamRepo, branch, commitMessage},
                 realPublishedModule, newDependency, newVersion)
                 .then(() => Success)
                 .catch(() => Failure);
@@ -85,6 +84,7 @@ interface Repository {
     name: string;
     owner: string;
 }
+
 function slug(repository: Repository): string {
     return `${repository.name}/${repository.owner}`;
 }
@@ -96,31 +96,31 @@ function updateDependencyOnBranch(githubToken: string,
 
     // clone the target project.
     const cloneProject: Promise<GitProject | FailureReport> =
-        GitCommandGitProject.cloned(githubToken, target.repo.owner, target.repo.name, target.branch).
-            catch(e => ({ circumstance: `Cloning project ${slug(target.repo)}`, error: e }));
+        GitCommandGitProject.cloned(githubToken, target.repo.owner, target.repo.name, target.branch).catch(e => ({
+            circumstance: `Cloning project ${slug(target.repo)}`,
+            error: e
+        }));
 
     const editProject: Promise<GitProject | FailureReport> = cloneProject.then(project => {
-        if (isFailureReport(project)) { return project; } else {
-            const oldDependency = Microgrammar.fromString(`"$name": "$version"`,
-                {
-                    name: dependencyToReplace,
-                    version: /[0-9^.-]+/,
-                },
-            );
-
-            return doWithFileMatches(project, "package.json", oldDependency, f => {
-                const m = f.matches[0] as any;
-                m.name = newDependency;
-                m.version = newDependencyVersion;
-            }).run().then(files => project as GitProject | FailureReport);
+        if (isFailureReport(project)) {
+            return project;
+        } else {
+            return doWithFileMatches(project, "package.json",
+                dependencyGrammar(dependencyToReplace), f => {
+                    const m = f.matches[0] as any;
+                    m.name = newDependency;
+                    m.version = newDependencyVersion;
+                }).run().then(files => project as GitProject | FailureReport);
         }
-    }).catch(error => ({ circumstance: "Editing package.json", error }));
+    }).catch(error => ({circumstance: "Editing package.json", error}));
 
     const commitAndPushToProject = editProject.then(project => {
-        if (isFailureReport(project)) { return project; } else {
-            commitAndPush(target, project);
+        if (isFailureReport(project)) {
+            return project;
+        } else {
+            return commitAndPush(target, project);
         }
-    }).catch(error => ({ circumstance: "Committing and pushing", error }));
+    }).catch(error => ({circumstance: "Committing and pushing", error}));
 
     return commitAndPushToProject;
 }
@@ -131,9 +131,8 @@ interface PushInstruction {
     commitMessage: string;
 }
 
-function commitAndPush(
-    push: PushInstruction,
-    project: GitProject): Promise<any> {
+function commitAndPush(push: PushInstruction,
+                       project: GitProject): Promise<any> {
 
     return project.clean()
         .then(clean => {
@@ -157,4 +156,18 @@ export function parseCascadeTag(tags: any[]): [string, string] {
         return null;
     }
 
+}
+
+export function dependencyGrammar(dependencyToReplace: string) {
+    return Microgrammar.fromString<Dependency>('"${name}": "${version}"',
+        {
+            name: dependencyToReplace,
+            version: /[0-9^.-]+/,
+        },
+    );
+}
+
+export interface Dependency {
+    name: string;
+    version: string;
 }
