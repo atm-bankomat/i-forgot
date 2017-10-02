@@ -1,6 +1,7 @@
 subscription BuildCompleted {
     Build {
         name
+        buildUrl
         status
         commit {
             sha

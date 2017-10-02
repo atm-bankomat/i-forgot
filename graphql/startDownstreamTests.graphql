@@ -1,0 +1,28 @@
+subscription StartDownstreamTests
+{
+    Build(trigger: pull_request, status: passed) {
+        buildUrl
+        name
+        provider
+        trigger
+        pullRequest {
+            branch {
+                name
+            }
+            number
+            head {
+                sha
+                tags {
+                    name
+                }
+            }
+        }
+        repo {
+            name
+            owner
+            channels {
+                name
+            }
+        }
+    }
+}

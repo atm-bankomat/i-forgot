@@ -17,11 +17,8 @@ export function setStatus(token: string, status: Status, owner: string, repo: st
 
 export interface Status {
 
-    state: "success" | "failure";
-
-    target_url?: string;
-
-    context?: string;
-
+    state: "success" | "failure" | "pending";
+    target_url: string;
+    context: string;
     description: string;
 }

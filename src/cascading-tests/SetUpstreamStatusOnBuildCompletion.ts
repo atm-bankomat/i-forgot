@@ -8,7 +8,7 @@ import {
     Secrets,
     Success
 } from "@atomist/automation-client/Handlers";
-import * as schema from "../typings/types";
+import * as graphql from "../typings/types";
 import { AxiosPromise } from "axios";
 import { setStatus } from "./setStatus";
 import { BuildCompleted } from "../typings/types";
@@ -23,22 +23,22 @@ const downstreamRepos = ["automation-client-samples-ts"];
 @EventHandler("Event handler that notifies upstream PR of failed downstream build",
     GraphQL.subscriptionFromFile("graphql/cascadeBuildCompleted"))
 @Tags("cascade", "build", "status")
-export class SetUpstreamStatusOnBuildCompletion implements HandleEvent<schema.BuildCompleted.Subscription> {
+export class SetUpstreamStatusOnBuildCompletion implements HandleEvent<graphql.BuildCompleted.Subscription> {
 
     @Secret(Secrets.ORG_TOKEN)
     public githubToken: string;
 
-    public handle(root: EventFired<schema.BuildCompleted.Subscription>,
+    public handle(root: EventFired<graphql.BuildCompleted.Subscription>,
                   ctx: HandlerContext): Promise<HandlerResult> {
 
         const build = root.data.Build[0];
         if (downstreamRepos.includes(build.repo.name)) {
             // Check the branch in the upstream repo. Does it have a PR?
             return this.upstreamHasPrWithBranch(ctx, upstreamRepo, build.push.branch)
-                .then(upStreamHasBranch => {
-                    if (upStreamHasBranch) {
-                        return this.setUpstreamStatus(build, upstreamRepo)
-                            .then(_ => Success)
+                .then(upStreamBranch => {
+                    if (upStreamBranch) {
+                        return this.setUpstreamStatus(build, upstreamRepo, upStreamBranch.sha)
+                            .then(() => Success)
                             .catch(err => {
                                 return {
                                     code: 1,
@@ -52,23 +52,25 @@ export class SetUpstreamStatusOnBuildCompletion implements HandleEvent<schema.Bu
         return Promise.resolve(Success);
     }
 
-    private upstreamHasPrWithBranch(ctx: HandlerContext, upstreamRepo: string, branch: string): Promise<boolean> {
-        return ctx.graphClient.executeFile<schema.PrWithBranch.Query, schema.PrWithBranch.Variables>(
-            "graphql/PrWithBranch",
+    private upstreamHasPrWithBranch(ctx: HandlerContext, upstreamRepo: string, branch: string): Promise<graphql.PrWithBranch.Head> {
+        return ctx.graphClient.executeFile<graphql.PrWithBranch.Query, graphql.PrWithBranch.Variables>(
+            "prWithBranch",
             {repoName: upstreamRepo, branch})
-            .then(result => result.PullRequest.length > 0);
+            .then(result =>
+                result.PullRequest && result.PullRequest[0].head ? result.PullRequest[0].head : null);
     }
 
-    private setUpstreamStatus(build: Build, upstreamRepo: string): AxiosPromise {
-        const state: "failure" | "success" = (build.status === "broken" || build.status === "failed") ?
-            "failure" :
-            "success";
+    private setUpstreamStatus(build: Build, upstreamRepo: string, upstreamSha: string): AxiosPromise {
+        const state: "failure" | "success" | "pending" = (build.status === "broken" || build.status === "failed") ?
+            "failure" : (build.status === "started" ? "pending" : "success");
         const status = {
             state,
             description: `Build status from ${build.repo.name}`,
+            context: "downstream-test/atomist",
+            target_url: build.buildUrl,
         };
         return setStatus(this.githubToken, status, build.repo.owner,
-            upstreamRepo, build.commit.sha
+            upstreamRepo, upstreamSha
         );
     }
 }

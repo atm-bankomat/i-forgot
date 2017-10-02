@@ -16,46 +16,20 @@ import { Microgrammar } from "@atomist/microgrammar/Microgrammar";
 import * as _ from "lodash";
 import { FailureReport, isFailureReport } from "../lint-fix/travis/stuff";
 import { Failure } from "@atomist/automation-client/HandlerResult";
+import { setStatus } from "./setStatus";
+import * as graphql from "../typings/types";
+import * as GraphqQL from "@atomist/automation-client/graph/graphQL";
 
-const Query = `
-subscription StartDownstreamTests 
-{
-  Build(trigger: pull_request, status: passed) {
-    buildUrl
-    name
-    provider
-    trigger
-    pullRequest {
-      branch {
-        name
-      }
-      number
-      head {
-        sha
-        tags {
-          name
-        }
-      }
-    }
-    repo {
-      name
-      owner
-      channels {
-        name
-      }
-    }
-  }
-}
-`;
-
-@EventHandler("After a PR build, run downstream tests", Query)
+@EventHandler("After a PR build, run downstream tests",
+    GraphqQL.subscriptionFromFile("graphql/startDownstreamTests"))
 @Tags("travis")
-export class StartDownstreamTests implements HandleEvent<any> {
+export class StartDownstreamTests implements HandleEvent<graphql.StartDownstreamTests.Subscription> {
 
     @Secret(Secrets.ORG_TOKEN)
     public githubToken: string;
 
-    public handle(e: EventFired<any>, ctx: HandlerContext): Promise<HandlerResult> {
+    public handle(e: EventFired<graphql.StartDownstreamTests.Subscription>,
+                  ctx: HandlerContext): Promise<HandlerResult> {
 
         const build = e.data.Build[0];
         const branch = _.get(build, "pullRequest.branch.name") as string;
@@ -72,7 +46,7 @@ export class StartDownstreamTests implements HandleEvent<any> {
 
             return updateDependencyOnBranch(githubToken,
                 {repo: downstreamRepo, branch, commitMessage},
-                realPublishedModule, newDependency, newVersion)
+                realPublishedModule, newDependency, newVersion, build)
                 .then(() => Success)
                 .catch(() => Failure);
 
@@ -95,7 +69,9 @@ function slug(repository: Repository): string {
 function updateDependencyOnBranch(githubToken: string,
                                   target: PushInstruction,
                                   dependencyToReplace: string,
-                                  newDependency: string, newDependencyVersion: string): Promise<void | FailureReport> {
+                                  newDependency: string,
+                                  newDependencyVersion: string,
+                                  build: graphql.StartDownstreamTests.Build): Promise<HandlerResult | FailureReport> {
 
     // clone the target project.
     const cloneProject: Promise<GitProject | FailureReport> =
@@ -125,7 +101,22 @@ function updateDependencyOnBranch(githubToken: string,
         }
     }).catch(error => ({circumstance: "Committing and pushing", error}));
 
-    return commitAndPushToProject;
+    const updateStatus = commitAndPushToProject.then(project => {
+        if (isFailureReport(project)) {
+            return Failure;
+        } else if (project["pushed"]) {
+            return setStatus(githubToken,
+                { state: "pending", context: "downstream-test/atomist",
+                    description: `Build status from ${target.repo.name}`,
+                    target_url: `https://github.com/${project.owner}/${project.name}/tree/${target.branch}`},
+                    build.repo.owner, build.repo.name, build.pullRequest.head.sha)
+                .then(() => Success);
+        } else {
+            return Success;
+        }
+    }).catch(error => ({circumstance: "Setting status on upstream PR", error}));
+
+    return updateStatus;
 }
 
 interface PushInstruction {
@@ -135,16 +126,19 @@ interface PushInstruction {
 }
 
 function commitAndPush(push: PushInstruction,
-                       project: GitProject): Promise<any> {
+                       project: GitProject): Promise<GitProject | FailureReport> {
 
     return project.clean()
         .then(clean => {
             if (!clean) {
+                project["pushed"] = true;
                 return project.createBranch(push.branch)
                     .then(() => project.commit(push.commitMessage))
-                    .then(() => project.push());
+                    .then(() => project.push())
+                    .then(() => project);
             } else {
-                return Promise.resolve(Success);
+                project["pushed"] = false;
+                return Promise.resolve(project);
             }
         });
 }
