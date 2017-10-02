@@ -4,6 +4,7 @@ import * as appRoot from "app-root-path";
 import { NewAutomation } from "./commands/generator/NewAutomation";
 import { HelloIngestor } from "./events/HelloIngestor";
 import { StartDownstreamTests } from "./cascading-tests/StartDownstreamTests";
+import { SetUpstreamStatusOnBuildCompletion } from "./cascading-tests/SetUpstreamStatusOnBuildCompletion";
 // import { DistillBuildLog, FailedBuildLog } from "./lint-fix/DistillFailedBuild";
 
 const pj = require(`${appRoot}//package.json`);
@@ -25,6 +26,7 @@ export const configuration: Configuration = {
         //  () => new UpdateActionBoardsOnIssue(),
         // () => new FailedBuildLog(),
         // () => new LintEveryBranch(),
+        () => new SetUpstreamStatusOnBuildCompletion(),
         () => new StartDownstreamTests(),
     ],
     ingestors: [

@@ -1,0 +1,16 @@
+subscription BuildCompleted {
+    Build {
+        name
+        status
+        commit {
+            sha
+        }
+        push {
+            branch
+        }
+        repo {
+            name
+            owner
+        }
+    }
+}

@@ -1,0 +1,10 @@
+query PrWithBranch($repoName: String!, $branch: String!) {
+    PullRequest(state: "open") {
+        repo(name: $repoName) {
+            name
+        }
+        branch(name: $branch) {
+            name
+        }
+    }
+}
