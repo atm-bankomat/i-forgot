@@ -1,7 +1,7 @@
 {
-  "name": "@atm-osphere/action-board",
+  "name": "@atm-bankomat/failed-build-logs",
   "version": "0.2.0",
-  "repository": "git@github.com:atm-osphere/automation-client.git",
+  "repository": "git@github.com:atm-bankomat/i-forgot.git",
   "description": "This is my first Atomist automation node",
   "dependencies": {
     "@atomist/automation-client": "^0.1.31",

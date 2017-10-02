@@ -18,7 +18,7 @@ const pj = require(`${appRoot}//package.json`);
 const token = process.env["GITHUB_TOKEN"];
 
 export const configuration: Configuration = {
-    name: "action-board",
+    name: "failed-build-logs",
     version: "0.2.4",
     teamId: "T7BPVSAR3",
     commands: [
