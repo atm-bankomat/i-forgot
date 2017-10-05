@@ -1,11 +1,11 @@
 import { Configuration } from "@atomist/automation-client/configuration";
 import { guid } from "@atomist/automation-client/internal/util/string";
-import * as appRoot from "app-root-path";
 import { ActionBoard, ActionBoardUpdate, CommenceWork, PostponeWork } from "./action-board/ActionBoard";
+import * as appRoot from "app-root-path";
 
 import { CloseIssue } from "./action-board/Complete";
-import { Unassign } from "./action-board/Unassign";
 import { UpdateActionBoardsOnIssue } from "./action-board/UpdateActionBoardsOnIssue";
+import { Unassign } from "./action-board/Unassign";
 import { NewAutomation } from "./commands/generator/NewAutomation";
 import { HelloIngestor } from "./events/HelloIngestor";
 import { BuildLog } from "./lint-fix/BuildLog";
