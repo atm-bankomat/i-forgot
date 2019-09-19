@@ -11,6 +11,8 @@ the [Atomist][atomist] API.  You will find examples illustrating:
 These example use the [`@atomist/automation-client`][client] node
 module to implement a local client that connects to the Atomist API.
 
+
+poo
 [client]: https://github.com/atomist/automation-client-ts (@atomist/automation-client Node Module)
 
 ## Prerequisites
